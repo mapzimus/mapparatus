@@ -39,6 +39,25 @@
       display: flex;
       flex-direction: column;
       transition: background-color 0.3s ease, border-color 0.3s ease;
+      scrollbar-width: thin;
+      scrollbar-color: #3a3a5a transparent;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #3a3a5a;
+      border-radius: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: #4a4a6a;
     }
 
     body.light-mode .sidebar {
@@ -139,8 +158,8 @@
     }
 
     .color-swatch.active {
-      border-color: #667eea;
-      box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+      border-color: #ffffff;
+      box-shadow: 0 0 0 2px #667eea, 0 0 10px rgba(102, 126, 234, 0.4);
     }
 
     .color-inputs {
@@ -284,11 +303,14 @@
     }
 
     .btn.danger {
-      background: #dc3545;
+      background: transparent;
+      border: 1px solid #dc3545;
+      color: #dc3545;
     }
 
     .btn.danger:hover {
-      background: #e85d5d;
+      background: #dc3545;
+      color: #fff;
     }
 
     .btn-pro {
@@ -578,14 +600,18 @@
       color: #667eea;
       padding: 20px 20px 5px;
       cursor: text;
-      border: 2px solid transparent;
-      border-radius: 4px;
-      transition: border-color 0.2s;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      transition: border-color 0.3s;
       outline: none;
     }
 
-    .map-title:hover, .map-title:focus {
-      border-color: #667eea;
+    .map-title:hover {
+      border-bottom-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .map-title:focus {
+      border-bottom-color: #667eea;
     }
 
     body.light-mode .map-title {
@@ -1113,8 +1139,8 @@
         'California': { dx: 0, dy: 20 },
         'New York': { dx: 10, dy: 5 },
         'Virginia': { dx: 10, dy: 2 },
-        'Maryland': { dx: 30, dy: -12 },
-        'Delaware': { dx: 18, dy: 0 },
+        'Maryland': { dx: 10, dy: -5 },
+        'Delaware': { dx: 30, dy: 5 },
         'District of Columbia': { hide: true },
         'New Jersey': { dx: 12, dy: 5 },
         'Connecticut': { dx: 8, dy: 5 },
