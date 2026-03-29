@@ -992,13 +992,8 @@
           <!-- Basemap: ocean background -->
           <rect id="oceanBg" x="-20" y="-30" width="1010" height="710" fill="#1a3a5c" opacity="0.15"/>
 
-          <!-- Basemap: simplified Canada & Mexico outlines -->
-          <g id="basemapGroup" opacity="0.12">
-            <!-- Canada (simplified southern border region) -->
-            <path d="M 50,0 L 120,-25 200,-20 280,-25 350,-15 420,-25 480,-20 540,-25 600,-15 650,-20 700,-15 750,-25 800,-10 850,-20 900,-15 950,-25 970,0 970,30 L 900,10 850,15 800,5 750,10 700,5 650,15 600,5 550,10 500,5 450,10 400,5 350,10 300,5 250,10 200,5 150,10 100,5 50,10 Z" fill="currentColor" opacity="0.3"/>
-            <!-- Mexico (simplified northern border region) -->
-            <path d="M 200,540 L 250,555 320,545 380,560 430,550 480,565 530,555 570,570 600,565 620,580 640,610 660,640 680,660 660,700 600,700 550,680 500,660 450,650 400,640 350,650 300,660 250,640 200,620 180,580 Z" fill="currentColor" opacity="0.3"/>
-          </g>
+          <!-- Basemap: Canada & Mexico outlines (loaded dynamically from world-atlas) -->
+          <g id="basemapGroup" opacity="0.15" transform="translate(5, -20) scale(0.95)"></g>
 
           <g id="statesGroup" transform="translate(5, -20) scale(0.95)"></g>
 
@@ -1030,7 +1025,7 @@
         </svg>
         <div class="legend-group" id="legendDisplay" style="display: none;"></div>
         <div class="stats-bar" id="statsBar">
-          <div class="stats-text" id="statsText">0 of 50 states colored</div>
+          <div class="stats-text" id="statsText">0 of 52 states & territories colored</div>
           <div class="stats-progress">
             <div class="stats-progress-bar">
               <div class="stats-progress-fill" id="statsProgressFill" style="width: 0%"></div>
@@ -1095,6 +1090,8 @@
   <div class="confirmation-message" id="confirmationMessage"></div>
 
   <!-- External Dependencies -->
+  <script src="https://d3js.org/d3-array.v3.min.js"></script>
+  <script src="https://d3js.org/d3-geo.v3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -1164,6 +1161,7 @@
       initializeColorPalette();
       initializeTitleSubtitle();
       await loadUSMap();
+      loadBasemap(); // load real Canada/Mexico basemap in background
       loadStateFromURL();
       attachEventListeners();
       updateStatsBar();
@@ -1182,6 +1180,46 @@
       } catch (error) {
         console.error('Failed to load US map:', error);
         showMessage('Failed to load map data', 'error');
+      }
+    }
+
+    async function loadBasemap() {
+      try {
+        if (typeof d3 === 'undefined' || !d3.geoAlbers) {
+          console.warn('d3-geo not loaded, skipping basemap');
+          return;
+        }
+        const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+        const world = await response.json();
+        const countries = topojson.feature(world, world.objects.countries).features;
+
+        // Canada = ISO 124, Mexico = ISO 484
+        const canada = countries.find(f => +f.id === 124);
+        const mexico = countries.find(f => +f.id === 484);
+
+        // Projection matching the continental US portion of us-atlas@3 pre-projected data
+        // d3.geoAlbersUsa() internally uses d3.geoAlbers() with these defaults for lower-48
+        const projection = d3.geoAlbers()
+          .scale(1070)
+          .translate([480, 250]);
+
+        const pathGen = d3.geoPath(projection);
+
+        const basemapGroup = document.getElementById('basemapGroup');
+        basemapGroup.innerHTML = '';
+
+        [canada, mexico].forEach(country => {
+          if (!country) return;
+          const pathData = pathGen(country);
+          if (!pathData) return;
+          const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          pathEl.setAttribute('d', pathData);
+          pathEl.setAttribute('fill', 'currentColor');
+          pathEl.setAttribute('opacity', '0.4');
+          basemapGroup.appendChild(pathEl);
+        });
+      } catch (error) {
+        console.error('Failed to load basemap:', error);
       }
     }
 
@@ -1411,7 +1449,7 @@
       const total = Object.keys(appState.stateAbbreviations).length;
       const percentage = Math.min((colored / total) * 100, 100);
 
-      document.getElementById('statsText').textContent = `${colored} of ${total} colored`;
+      document.getElementById('statsText').textContent = `${colored} of ${total} states & territories colored`;
       document.getElementById('statsProgressFill').style.width = percentage + '%';
 
       // Build breakdown by legend category
