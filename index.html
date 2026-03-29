@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cakemapper - US State Mapping</title>
+  <title>Mapparatus - US State Mapping</title>
   <style>
     * {
       margin: 0;
@@ -74,9 +74,10 @@
     }
 
     .sidebar-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #667eea;
+      font-size: 22px;
+      font-weight: 800;
+      color: #2B7A8C;
+      letter-spacing: -0.5px;
     }
 
     .theme-toggle {
@@ -101,16 +102,16 @@
     }
 
     .section-title {
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      color: #a0a0a0;
-      margin-bottom: 12px;
-      letter-spacing: 0.5px;
+      color: #8a9bb0;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
     }
 
     body.light-mode .section-title {
-      color: #666;
+      color: #7a8a9b;
     }
 
     .section-content {
@@ -122,8 +123,8 @@
     }
 
     body.light-mode .section-content {
-      background: #f9f9f9;
-      border-color: #e0e0e0;
+      background: #f7f8fa;
+      border-color: #e5e8ec;
     }
 
     .instructions-text {
@@ -159,7 +160,7 @@
 
     .color-swatch.active {
       border-color: #ffffff;
-      box-shadow: 0 0 0 2px #667eea, 0 0 10px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 0 0 2px #2B7A8C, 0 0 8px rgba(43, 122, 140, 0.35);
     }
 
     .color-inputs {
@@ -262,22 +263,25 @@
     }
 
     .btn {
-      background: #667eea;
+      background: #2B7A8C;
       color: #fff;
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
       cursor: pointer;
       font-weight: 600;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
       width: 100%;
       margin-bottom: 8px;
+      letter-spacing: 0.2px;
     }
 
+
     .btn:hover {
-      background: #7c8ff5;
+      background: #3A9BB0;
       transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(43, 122, 140, 0.25);
     }
 
     .btn:active {
@@ -320,15 +324,16 @@
 
     .pro-badge {
       position: absolute;
-      top: 2px;
-      right: 6px;
-      background: #ffd700;
+      top: 3px;
+      right: 8px;
+      background: linear-gradient(135deg, #f0c27f, #e2a04e);
       color: #1a1a2e;
       font-size: 8px;
-      font-weight: 700;
-      padding: 2px 4px;
-      border-radius: 2px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 3px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     /* Main map area */
@@ -379,18 +384,18 @@
     }
 
     body.light-mode .state-path {
-      fill: #e8e8e8;
-      stroke: #d0d0d0;
+      fill: #e2e5ea;
+      stroke: #c8cdd5;
     }
 
     .state-path:hover {
-      stroke-width: 2;
+      stroke-width: 1.8;
       stroke: #ffffff;
-      filter: brightness(1.15);
+      filter: brightness(1.12);
     }
 
     body.light-mode .state-path:hover {
-      stroke: #333333;
+      stroke: #2B7A8C;
     }
 
     .state-label {
@@ -404,7 +409,7 @@
     }
 
     body.light-mode .state-label {
-      fill: #666;
+      fill: #5a6a7a;
     }
 
     .legend-group {
@@ -420,15 +425,18 @@
     }
 
     body.light-mode .legend-group {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.92);
       border-color: #e0e0e0;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     }
 
     .legend-title {
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       margin-bottom: 8px;
-      color: #667eea;
+      color: #2B7A8C;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
     }
 
     .legend-item {
@@ -469,6 +477,7 @@
       background: rgba(255, 255, 255, 0.95);
       color: #2c2c2c;
       border-color: #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .modal-overlay {
@@ -501,14 +510,16 @@
 
     body.light-mode .modal {
       background: #ffffff;
-      border-color: #e0e0e0;
+      border-color: #e5e8ec;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
     .modal-title {
       font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: #667eea;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #2B7A8C;
+      letter-spacing: -0.3px;
     }
 
     .modal-subtitle {
@@ -546,14 +557,17 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #0f3460;
+      background: rgba(16, 24, 40, 0.92);
       color: #e0e0e0;
-      padding: 12px 16px;
-      border-radius: 4px;
-      border-left: 3px solid #667eea;
-      font-size: 12px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      border-left: 3px solid #2B7A8C;
+      font-size: 13px;
+      font-weight: 500;
       z-index: 1500;
       animation: slideIn 0.3s ease;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
 
     @keyframes slideIn {
@@ -597,16 +611,17 @@
 
     /* Map Title & Subtitle */
     .map-title {
-      font-size: 28px;
-      font-weight: 700;
+      font-size: 26px;
+      font-weight: 800;
       text-align: center;
-      color: #667eea;
-      padding: 20px 20px 5px;
+      color: #2B7A8C;
+      padding: 22px 20px 6px;
       cursor: text;
       border-bottom: 2px solid transparent;
       border-radius: 0;
       transition: border-color 0.3s;
       outline: none;
+      letter-spacing: -0.3px;
     }
 
     .map-title:hover {
@@ -622,16 +637,17 @@
     }
 
     .map-subtitle {
-      font-size: 14px;
+      font-size: 13px;
       text-align: center;
-      color: #a0a0a0;
-      padding: 0 20px 15px;
+      color: #8a9bb0;
+      padding: 2px 20px 16px;
       cursor: text;
       border: 2px solid transparent;
       border-radius: 4px;
       transition: border-color 0.2s;
       outline: none;
       min-height: 20px;
+      letter-spacing: 0.2px;
     }
 
     .map-subtitle:empty {
@@ -668,9 +684,9 @@
     }
 
     body.light-mode .stats-bar {
-      background: #f0f0f0;
-      border-top-color: #e0e0e0;
-      color: #666;
+      background: #f0f2f5;
+      border-top-color: #e5e8ec;
+      color: #7a8a9b;
     }
 
     .stats-progress {
@@ -810,7 +826,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">Cakemapper</div>
+        <div class="sidebar-title">Mapparatus</div>
         <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
       </div>
 
@@ -819,11 +835,11 @@
         <div class="section-title">How to Use</div>
         <div class="section-content">
           <div class="instructions-text">
-            <strong>1.</strong> Pick a color from the palette<br>
-            <strong>2.</strong> Click a state to color it<br>
-            <strong>3.</strong> Right-click a state to clear it<br>
-            <strong>4.</strong> Add legend entries<br>
-            <strong>5.</strong> Export or save your map
+            <strong>1.</strong> Select a color from the palette<br>
+            <strong>2.</strong> Click any state to apply the color<br>
+            <strong>3.</strong> Right-click a state to remove its color<br>
+            <strong>4.</strong> Add legend entries to label your colors<br>
+            <strong>5.</strong> Export your finished map
           </div>
         </div>
       </div>
@@ -1040,7 +1056,7 @@
   <!-- Modals -->
   <div class="modal-overlay" id="upgradeModal">
     <div class="modal">
-      <div class="modal-title">Upgrade to Cakemapper Pro</div>
+      <div class="modal-title">Upgrade to Mapparatus Pro</div>
       <div class="modal-subtitle">Unlock advanced features</div>
       <div class="modal-content">
         <p>Pro features include county-level mapping, advanced data import, and more export options.</p>
@@ -1845,7 +1861,7 @@
         backgroundColor: bgColor,
         scrollX: 0,
         scrollY: -window.scrollY,
-        scale: 2,
+        scale: 3,
         useCORS: true
       }).then(canvas => {
         // Add watermark
@@ -1855,10 +1871,18 @@
         ctx.fillStyle = appState.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Made with Cakemapper', canvas.width - 20, canvas.height - 12);
+        // Source line for free users
+        if (!isPro()) {
+          const scaleFactor = 3;
+          ctx.font = `${11 * scaleFactor}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+          ctx.fillStyle = appState.darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText('mapparatus.org', canvas.width - (16 * scaleFactor), canvas.height - (8 * scaleFactor));
+        }
         ctx.restore();
 
-        const slug = (appState.mapTitle || 'cakemapper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cakemapper';
+        const slug = (appState.mapTitle || 'mapparatus').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mapparatus';
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
         link.download = `${slug}.png`;
@@ -1912,11 +1936,24 @@
         l.style.fontFamily = 'sans-serif';
       });
 
+      // Source line for free users
+      if (!isPro()) {
+        const srcText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        srcText.setAttribute('x', '970');
+        srcText.setAttribute('y', '685');
+        srcText.setAttribute('text-anchor', 'end');
+        srcText.setAttribute('font-size', '11');
+        srcText.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, sans-serif');
+        srcText.setAttribute('fill', appState.darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)');
+        srcText.textContent = 'mapparatus.org';
+        clone.appendChild(srcText);
+      }
+
       const serializer = new XMLSerializer();
       const svgStr = serializer.serializeToString(clone);
       const blob = new Blob([svgStr], { type: 'image/svg+xml' });
       const link = document.createElement('a');
-      const slug = (appState.mapTitle || 'cakemapper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cakemapper';
+      const slug = (appState.mapTitle || 'mapparatus').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mapparatus';
       link.href = URL.createObjectURL(blob);
       link.download = `${slug}.svg`;
       link.click();
@@ -1935,7 +1972,7 @@
       const csvContent = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const link = document.createElement('a');
-      const slug = (appState.mapTitle || 'cakemapper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cakemapper';
+      const slug = (appState.mapTitle || 'mapparatus').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mapparatus';
       link.href = URL.createObjectURL(blob);
       link.download = `${slug}.csv`;
       link.click();
@@ -1967,7 +2004,7 @@
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = 'cakemapper.geojson';
+      link.download = 'mapparatus.geojson';
       link.click();
       showMessage('GeoJSON exported successfully', 'success');
     }
@@ -1984,7 +2021,7 @@
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = `cakemapper-${Date.now()}.json`;
+      link.download = `mapparatus-${Date.now()}.json`;
       link.click();
       showMessage('Config saved', 'success');
     }
@@ -2028,7 +2065,7 @@
     // ============================================================================
 
     function loadThemePreference() {
-      const stored = localStorage.getItem('cakemapper-theme');
+      const stored = localStorage.getItem('mapparatus-theme');
       if (stored === 'light') {
         appState.darkMode = false;
         document.body.classList.add('light-mode');
@@ -2040,7 +2077,7 @@
       appState.darkMode = !appState.darkMode;
       document.body.classList.toggle('light-mode');
       document.getElementById('themeToggle').textContent = appState.darkMode ? '🌙' : '☀️';
-      localStorage.setItem('cakemapper-theme', appState.darkMode ? 'dark' : 'light');
+      localStorage.setItem('mapparatus-theme', appState.darkMode ? 'dark' : 'light');
     }
 
     // ============================================================================
@@ -2590,7 +2627,7 @@
       // Pro code
       document.getElementById('proCodeSubmit').addEventListener('click', () => {
         const code = document.getElementById('proCodeInput').value.trim();
-        if (code === 'CAKEPRO2026' || code === 'cakemapper') {
+        if (code === 'MAPPRO2026' || code === 'mapparatus') {
           appState.proUnlocked = true;
           document.getElementById('upgradeModal').classList.remove('active');
           showMessage('Pro features unlocked!', 'success');
