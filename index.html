@@ -139,8 +139,8 @@
     /* Color Palette */
     .color-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
       margin-bottom: 12px;
     }
 
@@ -856,17 +856,55 @@
             Show state labels
           </label>
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; margin-bottom: 6px;">
+            <input type="checkbox" id="toggleBasemap" checked style="accent-color: #667eea; cursor: pointer;">
+            Show basemap
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; margin-bottom: 6px;">
             <input type="checkbox" id="toggleNorthArrow" checked style="accent-color: #667eea; cursor: pointer;">
             North arrow
           </label>
+          <div style="margin-left: 24px; margin-bottom: 6px;">
+            <select id="arrowPositionSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 100%;">
+              <option value="top-right">Top Right</option>
+              <option value="top-left">Top Left</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+            </select>
+          </div>
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; margin-bottom: 6px;">
             <input type="checkbox" id="toggleScaleBar" checked style="accent-color: #667eea; cursor: pointer;">
             Scale bar
           </label>
+          <div style="margin-left: 24px; margin-bottom: 6px; display: flex; gap: 6px;">
+            <select id="scalePositionSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; flex: 1;">
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-center">Bottom Center</option>
+            </select>
+            <select id="scaleUnitSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 65px;">
+              <option value="imperial">mi</option>
+              <option value="metric">km</option>
+            </select>
+          </div>
+          <div style="margin-top: 6px; margin-bottom: 6px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 4px;">Legend position</label>
+            <select id="legendPositionSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 100%;">
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="top-left">Top Left</option>
+            </select>
+          </div>
           <div style="margin-top: 8px;">
             <label style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
               <input type="color" id="titleColorPicker" value="#667eea" style="width: 24px; height: 24px; border: none; background: none; cursor: pointer; padding: 0;">
               Title color
+            </label>
+          </div>
+          <div style="margin-top: 6px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+              <input type="color" id="bgColorPicker" value="#1a1a2e" style="width: 24px; height: 24px; border: none; background: none; cursor: pointer; padding: 0;">
+              Background
             </label>
           </div>
         </div>
@@ -898,14 +936,26 @@
         </div>
       </div>
 
-      <!-- Import Data (PRO) -->
+      <!-- Import Data -->
       <div class="section">
         <div class="section-title">Import</div>
         <div class="section-content">
-          <button class="btn btn-pro" id="importDataBtn">
-            Import Data
+          <button class="btn" id="importDataBtn">📊 Import CSV</button>
+          <div style="font-size: 10px; color: #a0a0a0; margin-top: 4px; line-height: 1.4;">
+            CSV with columns: State + Category/Color
+          </div>
+        </div>
+      </div>
+
+      <!-- Pro Features -->
+      <div class="section">
+        <div class="section-title">Pro Features</div>
+        <div class="section-content">
+          <button class="btn btn-pro" id="countyViewBtn">
+            🗺 County View
             <span class="pro-badge">PRO</span>
           </button>
+          <button class="btn secondary" id="backToStatesBtn" style="display: none;">← Back to States</button>
         </div>
       </div>
 
@@ -923,7 +973,9 @@
         <div class="section-title">Export</div>
         <div class="section-content">
           <button class="btn" id="exportPNGBtn">⬇ Export PNG</button>
+          <button class="btn" id="exportSVGBtn">⬇ Export SVG</button>
           <button class="btn" id="exportGeoJSONBtn">⬇ Export GeoJSON</button>
+          <button class="btn" id="exportCSVBtn">⬇ Export CSV</button>
           <button class="btn secondary" id="copyShareLinkBtn">🔗 Copy Share Link</button>
           <button class="btn secondary" id="saveConfigBtn">💾 Save Config</button>
           <button class="btn secondary" id="loadConfigBtn">📂 Load Config</button>
@@ -936,10 +988,28 @@
       <div class="map-container" id="mapContainer">
         <div class="map-title" id="mapTitle" contenteditable="true">My US Map</div>
         <div class="map-subtitle" id="mapSubtitle" contenteditable="true" data-placeholder="Click to add subtitle"></div>
-        <svg id="mapSVG" viewBox="-20 -30 1010 680" preserveAspectRatio="xMidYMid meet">
+        <svg id="mapSVG" viewBox="-20 -30 1010 710" preserveAspectRatio="xMidYMid meet">
+          <!-- Basemap: ocean background -->
+          <rect id="oceanBg" x="-20" y="-30" width="1010" height="710" fill="#1a3a5c" opacity="0.15"/>
+
+          <!-- Basemap: simplified Canada & Mexico outlines -->
+          <g id="basemapGroup" opacity="0.12">
+            <!-- Canada (simplified southern border region) -->
+            <path d="M 50,0 L 120,-25 200,-20 280,-25 350,-15 420,-25 480,-20 540,-25 600,-15 650,-20 700,-15 750,-25 800,-10 850,-20 900,-15 950,-25 970,0 970,30 L 900,10 850,15 800,5 750,10 700,5 650,15 600,5 550,10 500,5 450,10 400,5 350,10 300,5 250,10 200,5 150,10 100,5 50,10 Z" fill="currentColor" opacity="0.3"/>
+            <!-- Mexico (simplified northern border region) -->
+            <path d="M 200,540 L 250,555 320,545 380,560 430,550 480,565 530,555 570,570 600,565 620,580 640,610 660,640 680,660 660,700 600,700 550,680 500,660 450,650 400,640 350,650 300,660 250,640 200,620 180,580 Z" fill="currentColor" opacity="0.3"/>
+          </g>
+
           <g id="statesGroup" transform="translate(5, -20) scale(0.95)"></g>
 
-          <!-- North Arrow (top-right, compass style) -->
+          <!-- Puerto Rico (manually positioned near Hawaii inset) -->
+          <g id="puertoRicoGroup" transform="translate(555, 620) scale(0.3)">
+            <path id="prPath" class="state-path" data-state="Puerto Rico" data-index="pr"
+              d="M 0,20 L 10,5 30,0 60,0 90,2 120,0 150,5 170,15 175,30 165,45 140,52 110,55 80,55 50,50 25,45 10,38 0,30 Z"
+              style="cursor: pointer;"/>
+          </g>
+
+          <!-- North Arrow -->
           <g id="northArrow" transform="translate(940, 30)" opacity="0.4">
             <circle cx="0" cy="0" r="18" fill="none" stroke="currentColor" stroke-width="0.8"/>
             <polygon points="0,-15 -5,2 0,-4 5,2" fill="currentColor"/>
@@ -947,15 +1017,15 @@
             <text x="0" y="-22" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" font-family="sans-serif">N</text>
           </g>
 
-          <!-- Scale Bar (bottom-right) -->
-          <g id="scaleBar" transform="translate(700, 625)" opacity="0.4">
+          <!-- Scale Bar -->
+          <g id="scaleBar" transform="translate(700, 655)" opacity="0.4">
             <line x1="0" y1="0" x2="180" y2="0" stroke="currentColor" stroke-width="2"/>
             <line x1="0" y1="-5" x2="0" y2="5" stroke="currentColor" stroke-width="1.5"/>
             <line x1="90" y1="-4" x2="90" y2="4" stroke="currentColor" stroke-width="1"/>
             <line x1="180" y1="-5" x2="180" y2="5" stroke="currentColor" stroke-width="1.5"/>
             <text x="0" y="14" text-anchor="middle" font-size="10" fill="currentColor" font-family="sans-serif">0</text>
-            <text x="90" y="14" text-anchor="middle" font-size="10" fill="currentColor" font-family="sans-serif">200</text>
-            <text x="180" y="14" text-anchor="middle" font-size="10" fill="currentColor" font-family="sans-serif">400 mi</text>
+            <text x="90" y="14" text-anchor="middle" font-size="10" fill="currentColor" font-family="sans-serif" id="scaleMid">200</text>
+            <text x="180" y="14" text-anchor="middle" font-size="10" fill="currentColor" font-family="sans-serif" id="scaleEnd">400 mi</text>
           </g>
         </svg>
         <div class="legend-group" id="legendDisplay" style="display: none;"></div>
@@ -981,11 +1051,30 @@
       <div class="modal-title">Upgrade to Cakemapper Pro</div>
       <div class="modal-subtitle">Unlock advanced features</div>
       <div class="modal-content">
-        <p>The import feature allows you to load state data from CSV files and automatically color states based on categories or values.</p>
-        <p style="margin-top: 10px;"><strong>Coming soon!</strong> For now, you can manually color states using the palette.</p>
+        <p>Pro features include county-level mapping, advanced data import, and more export options.</p>
+        <p style="margin-top: 10px;"><strong>Coming soon!</strong> Enter code below to unlock early access.</p>
+        <div style="margin-top: 12px; display: flex; gap: 8px;">
+          <input type="text" id="proCodeInput" placeholder="Enter access code" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #3a3a5a; background: #1a1a2e; color: #e0e0e0; font-size: 12px;">
+          <button class="btn" id="proCodeSubmit" style="width: auto;">Unlock</button>
+        </div>
       </div>
       <div class="modal-actions">
-        <button class="btn" onclick="document.getElementById('upgradeModal').classList.remove('active')">Close</button>
+        <button class="btn secondary" onclick="document.getElementById('upgradeModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- County Selection Modal -->
+  <div class="modal-overlay" id="countySelectModal">
+    <div class="modal">
+      <div class="modal-title">County View</div>
+      <div class="modal-subtitle">Select a state to view its counties</div>
+      <div class="modal-content">
+        <select id="countyStateSelect" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #3a3a5a; background: #1a1a2e; color: #e0e0e0; font-size: 13px; margin-bottom: 10px;"></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="loadCountyViewBtn">View Counties</button>
+        <button class="btn secondary" onclick="document.getElementById('countySelectModal').classList.remove('active')">Cancel</button>
       </div>
     </div>
   </div>
@@ -1022,6 +1111,12 @@
       mapTitle: 'My US Map',
       mapSubtitle: '',
       titleColor: '#667eea',
+      bgColor: '',
+      scaleUnit: 'imperial',
+      legendPosition: 'bottom-right',
+      arrowPosition: 'top-right',
+      scalePosition: 'bottom-right',
+      showBasemap: true,
       history: [],
       darkMode: true,
       showLabels: true,
@@ -1041,18 +1136,22 @@
         'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
         'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT',
         'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV',
-        'Wisconsin': 'WI', 'Wyoming': 'WY', 'District of Columbia': 'DC'
+        'Wisconsin': 'WI', 'Wyoming': 'WY', 'District of Columbia': 'DC',
+        'Puerto Rico': 'PR'
       },
       regions: {
         northeast: ['Connecticut', 'Maine', 'Massachusetts', 'New Hampshire', 'Rhode Island', 'Vermont', 'New Jersey', 'New York', 'Pennsylvania'],
         midwest: ['Illinois', 'Indiana', 'Iowa', 'Kansas', 'Michigan', 'Minnesota', 'Missouri', 'Nebraska', 'North Dakota', 'Ohio', 'South Dakota', 'Wisconsin'],
-        south: ['Alabama', 'Arkansas', 'Delaware', 'Florida', 'Georgia', 'Kentucky', 'Louisiana', 'Maryland', 'Mississippi', 'North Carolina', 'Oklahoma', 'South Carolina', 'Tennessee', 'Texas', 'Virginia', 'West Virginia', 'District of Columbia'],
+        south: ['Alabama', 'Arkansas', 'Delaware', 'Florida', 'Georgia', 'Kentucky', 'Louisiana', 'Maryland', 'Mississippi', 'North Carolina', 'Oklahoma', 'South Carolina', 'Tennessee', 'Texas', 'Virginia', 'West Virginia', 'District of Columbia', 'Puerto Rico'],
         west: ['Alaska', 'Arizona', 'California', 'Colorado', 'Hawaii', 'Idaho', 'Montana', 'Nevada', 'New Mexico', 'Oregon', 'Utah', 'Washington', 'Wyoming']
       },
       presetColors: [
         '#667eea', '#ff6b6b', '#51cf66', '#ffd93d',
         '#6bcf7f', '#4ecdc4', '#ff8c42', '#a29bfe',
-        '#fd79a8', '#fab1a0', '#74b9ff', '#81ecec'
+        '#fd79a8', '#fab1a0', '#74b9ff', '#81ecec',
+        '#2d3436', '#636e72', '#b2bec3', '#dfe6e9',
+        '#d63031', '#e17055', '#00b894', '#00cec9',
+        '#0984e3', '#6c5ce7', '#fdcb6e', '#e84393'
       ]
     };
 
@@ -1130,24 +1229,28 @@
 
       // Manual label offsets for states where bbox center is misleading
       const labelOffsets = {
-        'Florida': { dx: 45, dy: 20 },
-        'Michigan': { dx: 20, dy: 20 },
-        'Louisiana': { dx: -5, dy: 5 },
-        'Hawaii': { dx: 20, dy: 5 },
-        'Alaska': { dx: 0, dy: 10 },
-        'Idaho': { dx: 0, dy: 10 },
-        'California': { dx: 0, dy: 20 },
+        'Florida': { dx: 50, dy: 28 },
+        'Michigan': { dx: 25, dy: 25 },
+        'Louisiana': { dx: -8, dy: 8 },
+        'Hawaii': { dx: 20, dy: -5 },
+        'Alaska': { dx: 15, dy: 15 },
+        'Idaho': { dx: 3, dy: 15 },
+        'California': { dx: -5, dy: 25 },
         'New York': { dx: 10, dy: 5 },
         'Virginia': { dx: 10, dy: 2 },
         'Maryland': { dx: 10, dy: -5 },
         'Delaware': { dx: 30, dy: 5 },
         'District of Columbia': { hide: true },
         'New Jersey': { dx: 12, dy: 5 },
-        'Connecticut': { dx: 8, dy: 5 },
-        'Rhode Island': { dx: 10, dy: 5 },
-        'Massachusetts': { dx: 15, dy: -2 },
-        'Minnesota': { dx: 0, dy: 10 },
-        'Kentucky': { dx: 10, dy: 0 }
+        'Connecticut': { dx: 10, dy: 6 },
+        'Rhode Island': { dx: 12, dy: 5 },
+        'Massachusetts': { dx: 18, dy: -2 },
+        'Minnesota': { dx: 5, dy: 15 },
+        'Kentucky': { dx: 10, dy: 0 },
+        'Oklahoma': { dx: 15, dy: 5 },
+        'West Virginia': { dx: 5, dy: 3 },
+        'Nevada': { dx: 3, dy: 10 },
+        'New Hampshire': { dx: 5, dy: 5 }
       };
 
       // Pass 1: Render all state paths first
@@ -1210,6 +1313,49 @@
           statesGroup.appendChild(label);
         }
       });
+
+      // Handle Puerto Rico (manually placed in SVG)
+      setupPuertoRico();
+    }
+
+    function setupPuertoRico() {
+      const prPath = document.getElementById('prPath');
+      if (!prPath) return;
+
+      // Apply stored color
+      if (appState.stateColors['Puerto Rico']) {
+        prPath.style.fill = appState.stateColors['Puerto Rico'];
+      } else {
+        prPath.style.fill = '';
+      }
+
+      // Remove old listeners by cloning
+      const newPr = prPath.cloneNode(true);
+      prPath.parentNode.replaceChild(newPr, prPath);
+      newPr.id = 'prPath';
+
+      newPr.addEventListener('click', (e) => onStateClick(e, 'Puerto Rico'));
+      newPr.addEventListener('contextmenu', (e) => onStateRightClick(e, 'Puerto Rico'));
+      newPr.addEventListener('mouseenter', (e) => showTooltip(e, 'Puerto Rico'));
+      newPr.addEventListener('mousemove', (e) => moveTooltip(e));
+      newPr.addEventListener('mouseleave', hideTooltip);
+
+      // PR label
+      const prGroup = newPr.closest('g');
+      let prLabel = prGroup.querySelector('.state-label');
+      if (!prLabel) {
+        prLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        prLabel.setAttribute('class', 'state-label');
+        prLabel.setAttribute('x', '88');
+        prLabel.setAttribute('y', '28');
+        prLabel.setAttribute('data-state', 'Puerto Rico');
+        prLabel.textContent = 'PR';
+        prGroup.appendChild(prLabel);
+      }
+      if (!appState.showLabels) prLabel.style.display = 'none';
+      if (appState.stateColors['Puerto Rico']) {
+        prLabel.style.fill = getLabelColor(appState.stateColors['Puerto Rico']);
+      }
     }
 
     // Returns white or dark text depending on background color brightness
@@ -1261,10 +1407,10 @@
 
     function updateStatsBar() {
       const colored = Object.keys(appState.stateColors).length;
-      const total = 50;
+      const total = Object.keys(appState.stateAbbreviations).length;
       const percentage = Math.min((colored / total) * 100, 100);
 
-      document.getElementById('statsText').textContent = `${colored} of ${total} states colored`;
+      document.getElementById('statsText').textContent = `${colored} of ${total} colored`;
       document.getElementById('statsProgressFill').style.width = percentage + '%';
 
       // Build breakdown by legend category
@@ -1661,7 +1807,7 @@
       svg.style.minHeight = 'auto';
       svg.style.height = 'auto';
 
-      const bgColor = appState.darkMode ? '#1a1a2e' : '#f5f5f5';
+      const bgColor = appState.bgColor || (appState.darkMode ? '#1a1a2e' : '#f5f5f5');
 
       html2canvas(mapContainer, {
         backgroundColor: bgColor,
@@ -1697,6 +1843,71 @@
         svg.style.minHeight = origSvgMinH;
         svg.style.height = '';
       });
+    }
+
+    function exportSVG() {
+      const svg = document.getElementById('mapSVG');
+      const clone = svg.cloneNode(true);
+
+      // Set explicit dimensions
+      clone.setAttribute('width', '1200');
+      clone.setAttribute('height', '850');
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+      // Add background color
+      const bgColor = appState.bgColor || (appState.darkMode ? '#1a1a2e' : '#f5f5f5');
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('width', '100%');
+      bgRect.setAttribute('height', '100%');
+      bgRect.setAttribute('fill', bgColor);
+      clone.insertBefore(bgRect, clone.firstChild);
+
+      // Add inline styles for state paths
+      clone.querySelectorAll('.state-path').forEach(p => {
+        if (!p.style.fill) {
+          p.style.fill = appState.darkMode ? '#2a2a4a' : '#e8e8e8';
+        }
+        p.style.stroke = appState.darkMode ? '#3a3a5a' : '#d0d0d0';
+        p.style.strokeWidth = '1';
+      });
+
+      clone.querySelectorAll('.state-label').forEach(l => {
+        if (!l.style.fill) {
+          l.style.fill = appState.darkMode ? '#a0a0a0' : '#666';
+        }
+        l.style.fontSize = '10px';
+        l.style.fontWeight = '600';
+        l.style.fontFamily = 'sans-serif';
+      });
+
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(clone);
+      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const link = document.createElement('a');
+      const slug = (appState.mapTitle || 'cakemapper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cakemapper';
+      link.href = URL.createObjectURL(blob);
+      link.download = `${slug}.svg`;
+      link.click();
+      showMessage('SVG exported successfully', 'success');
+    }
+
+    function exportCSV() {
+      const rows = [['State', 'Abbreviation', 'Color', 'Legend Label']];
+      Object.entries(appState.stateColors).forEach(([state, color]) => {
+        const abbr = appState.stateAbbreviations[state] || '';
+        const entry = appState.legendEntries.find(le => le.color === color);
+        const label = entry ? entry.label : '';
+        rows.push([state, abbr, color, label]);
+      });
+
+      const csvContent = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const link = document.createElement('a');
+      const slug = (appState.mapTitle || 'cakemapper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cakemapper';
+      link.href = URL.createObjectURL(blob);
+      link.download = `${slug}.csv`;
+      link.click();
+      showMessage('CSV exported successfully', 'success');
     }
 
     function exportGeoJSON() {
@@ -1834,6 +2045,365 @@
     }
 
     // ============================================================================
+    // POSITION & UNIT HELPERS
+    // ============================================================================
+
+    function updateElementPositions() {
+      // North arrow positions
+      const arrowPositions = {
+        'top-right': 'translate(940, 30)',
+        'top-left': 'translate(40, 30)',
+        'bottom-right': 'translate(940, 640)',
+        'bottom-left': 'translate(40, 640)'
+      };
+      const arrow = document.getElementById('northArrow');
+      if (arrow) arrow.setAttribute('transform', arrowPositions[appState.arrowPosition] || arrowPositions['top-right']);
+
+      // Scale bar positions
+      const scalePositions = {
+        'bottom-right': 'translate(700, 670)',
+        'bottom-left': 'translate(30, 670)',
+        'bottom-center': 'translate(380, 670)'
+      };
+      const scale = document.getElementById('scaleBar');
+      if (scale) scale.setAttribute('transform', scalePositions[appState.scalePosition] || scalePositions['bottom-right']);
+    }
+
+    function updateScaleBarUnits() {
+      const midEl = document.getElementById('scaleMid');
+      const endEl = document.getElementById('scaleEnd');
+      if (appState.scaleUnit === 'metric') {
+        midEl.textContent = '320';
+        endEl.textContent = '640 km';
+      } else {
+        midEl.textContent = '200';
+        endEl.textContent = '400 mi';
+      }
+    }
+
+    function updateLegendPosition() {
+      const legend = document.getElementById('legendDisplay');
+      if (!legend) return;
+      // Reset all positioning
+      legend.style.top = '';
+      legend.style.bottom = '';
+      legend.style.left = '';
+      legend.style.right = '';
+
+      switch (appState.legendPosition) {
+        case 'bottom-right':
+          legend.style.bottom = '50px';
+          legend.style.right = '20px';
+          break;
+        case 'bottom-left':
+          legend.style.bottom = '50px';
+          legend.style.left = '20px';
+          break;
+        case 'top-right':
+          legend.style.top = '20px';
+          legend.style.right = '20px';
+          break;
+        case 'top-left':
+          legend.style.top = '20px';
+          legend.style.left = '20px';
+          break;
+      }
+    }
+
+    // ============================================================================
+    // DATA IMPORT
+    // ============================================================================
+
+    function importCSVData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv,.tsv,.txt';
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            parseAndApplyCSV(event.target.result);
+          } catch (err) {
+            console.error('CSV import error:', err);
+            showMessage('Failed to parse CSV: ' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      });
+      input.click();
+    }
+
+    function parseAndApplyCSV(csvText) {
+      const lines = csvText.trim().split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length < 2) {
+        showMessage('CSV needs a header row and at least one data row', 'error');
+        return;
+      }
+
+      // Parse header
+      const delimiter = lines[0].includes('\t') ? '\t' : ',';
+      const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+
+      // Find state column
+      const stateColIdx = headers.findIndex(h =>
+        ['state', 'name', 'state_name', 'statename', 'territory'].includes(h)
+      );
+      if (stateColIdx === -1) {
+        showMessage('CSV must have a "State" or "Name" column', 'error');
+        return;
+      }
+
+      // Find category/color column
+      const catColIdx = headers.findIndex(h =>
+        ['category', 'group', 'color', 'class', 'type', 'label', 'value', 'status'].includes(h)
+      );
+      const colorColIdx = headers.findIndex(h => ['color', 'hex', 'fill'].includes(h));
+
+      if (catColIdx === -1 && colorColIdx === -1) {
+        showMessage('CSV must have a "Category", "Group", "Color", or "Value" column', 'error');
+        return;
+      }
+
+      // Build state-name lookup (name → canonical name, abbr → canonical name)
+      const nameToCanonical = {};
+      const abbrToCanonical = {};
+      Object.entries(appState.stateAbbreviations).forEach(([name, abbr]) => {
+        nameToCanonical[name.toLowerCase()] = name;
+        abbrToCanonical[abbr.toLowerCase()] = name;
+      });
+
+      // Auto-assign colors to categories
+      const categoryColors = {};
+      let colorIdx = 0;
+
+      saveHistory();
+
+      let matched = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(delimiter).map(c => c.trim().replace(/^"|"$/g, ''));
+        const rawState = cols[stateColIdx];
+        if (!rawState) continue;
+
+        // Resolve state name
+        const stateName = nameToCanonical[rawState.toLowerCase()] || abbrToCanonical[rawState.toLowerCase()];
+        if (!stateName) continue;
+
+        let color;
+        if (colorColIdx !== -1 && cols[colorColIdx] && /^#[0-9a-fA-F]{6}$/.test(cols[colorColIdx])) {
+          color = cols[colorColIdx];
+        } else if (catColIdx !== -1) {
+          const cat = cols[catColIdx] || 'Other';
+          if (!categoryColors[cat]) {
+            categoryColors[cat] = appState.presetColors[colorIdx % appState.presetColors.length];
+            colorIdx++;
+          }
+          color = categoryColors[cat];
+        }
+
+        if (color) {
+          appState.stateColors[stateName] = color;
+          matched++;
+        }
+      }
+
+      // Auto-create legend entries from categories
+      if (Object.keys(categoryColors).length > 0) {
+        appState.legendEntries = Object.entries(categoryColors).map(([label, color]) => ({ label, color }));
+      }
+
+      renderMap();
+      updateLegendBuilder();
+      updateLegendDisplay();
+      updateStatsBar();
+      updateURL();
+      showMessage(`Imported ${matched} states from CSV`, 'success');
+    }
+
+    // ============================================================================
+    // COUNTY VIEW (PRO)
+    // ============================================================================
+
+    let countyMode = false;
+    let countyStateName = null;
+    let countyTopology = null;
+    const countyColors = {};
+
+    async function loadCountyView(stateFips) {
+      try {
+        showMessage('Loading county data...', 'info');
+        if (!countyTopology) {
+          const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-albers-10m.json');
+          countyTopology = await response.json();
+        }
+
+        const allCounties = topojson.feature(countyTopology, countyTopology.objects.counties).features;
+        // Filter counties by state FIPS (first 2 digits of county FIPS)
+        const stateCounties = allCounties.filter(f => {
+          const fips = String(f.id).padStart(5, '0');
+          return fips.substring(0, 2) === stateFips;
+        });
+
+        if (stateCounties.length === 0) {
+          showMessage('No counties found for this state', 'error');
+          return;
+        }
+
+        countyMode = true;
+        const fipsLookup = Object.entries(fipsToState).find(([k, v]) => k === stateFips);
+        countyStateName = fipsLookup ? fipsLookup[1] : 'Unknown';
+
+        // Update title
+        document.getElementById('mapTitle').textContent = `${countyStateName} Counties`;
+
+        // Calculate bounding box of all county paths to zoom in
+        const statesGroup = document.getElementById('statesGroup');
+        statesGroup.innerHTML = '';
+
+        // Hide PR group in county mode
+        const prGroup = document.getElementById('puertoRicoGroup');
+        if (prGroup) prGroup.style.display = 'none';
+
+        const pathGenerator = d => {
+          let pathData = '';
+          if (d.type === 'Polygon') {
+            d.coordinates.forEach(ring => {
+              pathData += 'M' + ring.map(p => p.join(',')).join('L') + 'Z';
+            });
+          } else if (d.type === 'MultiPolygon') {
+            d.coordinates.forEach(polygon => {
+              polygon.forEach(ring => {
+                pathData += 'M' + ring.map(p => p.join(',')).join('L') + 'Z';
+              });
+            });
+          }
+          return pathData;
+        };
+
+        // Render county paths
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        const countyPaths = [];
+
+        stateCounties.forEach((feature, index) => {
+          const pathData = pathGenerator(feature.geometry);
+          const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          pathEl.setAttribute('d', pathData);
+          pathEl.setAttribute('class', 'state-path');
+          pathEl.setAttribute('data-county', feature.id);
+          pathEl.setAttribute('data-index', index);
+
+          const countyFips = String(feature.id).padStart(5, '0');
+          if (countyColors[countyFips]) {
+            pathEl.style.fill = countyColors[countyFips];
+          }
+
+          pathEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            saveHistory();
+            countyColors[countyFips] = appState.selectedColor;
+            pathEl.style.fill = appState.selectedColor;
+            updateStatsBar();
+          });
+
+          pathEl.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            saveHistory();
+            delete countyColors[countyFips];
+            pathEl.style.fill = '';
+            updateStatsBar();
+          });
+
+          pathEl.addEventListener('mouseenter', (e) => {
+            const tooltip = document.getElementById('tooltip');
+            const countyName = feature.properties?.name || `County ${feature.id}`;
+            tooltip.textContent = `${countyName} (${countyFips})`;
+            tooltip.style.display = 'block';
+            moveTooltip(e);
+          });
+          pathEl.addEventListener('mousemove', moveTooltip);
+          pathEl.addEventListener('mouseleave', hideTooltip);
+
+          statesGroup.appendChild(pathEl);
+          countyPaths.push(pathEl);
+        });
+
+        // Calculate bounds after adding to DOM
+        countyPaths.forEach(p => {
+          const bbox = p.getBBox();
+          minX = Math.min(minX, bbox.x);
+          minY = Math.min(minY, bbox.y);
+          maxX = Math.max(maxX, bbox.x + bbox.width);
+          maxY = Math.max(maxY, bbox.y + bbox.height);
+        });
+
+        // Zoom SVG viewBox to state bounds with padding
+        const padding = 30;
+        const svg = document.getElementById('mapSVG');
+        svg.setAttribute('viewBox',
+          `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`
+        );
+
+        // Show back button
+        document.getElementById('backToStatesBtn').style.display = '';
+        document.getElementById('countySelectModal').classList.remove('active');
+
+        const colored = Object.keys(countyColors).filter(k => k.startsWith(stateFips)).length;
+        showMessage(`Loaded ${stateCounties.length} counties for ${countyStateName}`, 'success');
+
+      } catch (error) {
+        console.error('Failed to load county data:', error);
+        showMessage('Failed to load county data', 'error');
+      }
+    }
+
+    function backToStateView() {
+      countyMode = false;
+      countyStateName = null;
+
+      // Restore viewBox
+      const svg = document.getElementById('mapSVG');
+      svg.setAttribute('viewBox', '-20 -30 1010 710');
+
+      // Restore PR group
+      const prGroup = document.getElementById('puertoRicoGroup');
+      if (prGroup) prGroup.style.display = '';
+
+      // Restore title
+      document.getElementById('mapTitle').textContent = appState.mapTitle;
+
+      // Re-render states
+      renderMap();
+      updateLegendDisplay();
+      updateStatsBar();
+
+      document.getElementById('backToStatesBtn').style.display = 'none';
+    }
+
+    function openCountySelector() {
+      if (!appState.proUnlocked) {
+        document.getElementById('upgradeModal').classList.add('active');
+        return;
+      }
+
+      const select = document.getElementById('countyStateSelect');
+      select.innerHTML = '';
+      const sorted = Object.entries(fipsToState)
+        .filter(([fips]) => fips !== '11' && fips !== '72') // exclude DC and PR for now
+        .sort((a, b) => a[1].localeCompare(b[1]));
+
+      sorted.forEach(([fips, name]) => {
+        const opt = document.createElement('option');
+        opt.value = fips;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('countySelectModal').classList.add('active');
+    }
+
+    // ============================================================================
     // EVENT LISTENERS
     // ============================================================================
 
@@ -1889,15 +2459,15 @@
 
       // Export
       document.getElementById('exportPNGBtn').addEventListener('click', exportPNG);
+      document.getElementById('exportSVGBtn').addEventListener('click', exportSVG);
       document.getElementById('exportGeoJSONBtn').addEventListener('click', exportGeoJSON);
+      document.getElementById('exportCSVBtn').addEventListener('click', exportCSV);
       document.getElementById('copyShareLinkBtn').addEventListener('click', copyShareLink);
       document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
       document.getElementById('loadConfigBtn').addEventListener('click', loadConfig);
 
-      // Import (PRO)
-      document.getElementById('importDataBtn').addEventListener('click', () => {
-        document.getElementById('upgradeModal').classList.add('active');
-      });
+      // Import CSV
+      document.getElementById('importDataBtn').addEventListener('click', importCSVData);
 
       // Theme
       document.getElementById('themeToggle').addEventListener('click', toggleTheme);
@@ -1910,14 +2480,39 @@
         });
       });
 
-      // North arrow toggle
+      // Basemap toggle
+      document.getElementById('toggleBasemap').addEventListener('change', (e) => {
+        appState.showBasemap = e.target.checked;
+        document.getElementById('oceanBg').style.display = e.target.checked ? '' : 'none';
+        document.getElementById('basemapGroup').style.display = e.target.checked ? '' : 'none';
+      });
+
+      // North arrow toggle & position
       document.getElementById('toggleNorthArrow').addEventListener('change', (e) => {
         document.getElementById('northArrow').style.display = e.target.checked ? '' : 'none';
       });
+      document.getElementById('arrowPositionSelect').addEventListener('change', (e) => {
+        appState.arrowPosition = e.target.value;
+        updateElementPositions();
+      });
 
-      // Scale bar toggle
+      // Scale bar toggle, position & units
       document.getElementById('toggleScaleBar').addEventListener('change', (e) => {
         document.getElementById('scaleBar').style.display = e.target.checked ? '' : 'none';
+      });
+      document.getElementById('scalePositionSelect').addEventListener('change', (e) => {
+        appState.scalePosition = e.target.value;
+        updateElementPositions();
+      });
+      document.getElementById('scaleUnitSelect').addEventListener('change', (e) => {
+        appState.scaleUnit = e.target.value;
+        updateScaleBarUnits();
+      });
+
+      // Legend position
+      document.getElementById('legendPositionSelect').addEventListener('change', (e) => {
+        appState.legendPosition = e.target.value;
+        updateLegendPosition();
       });
 
       // Title color picker
@@ -1926,6 +2521,32 @@
         document.getElementById('mapTitle').style.color = e.target.value;
         document.getElementById('mapSubtitle').style.color = e.target.value;
         updateURL();
+      });
+
+      // Background color picker
+      document.getElementById('bgColorPicker').addEventListener('input', (e) => {
+        appState.bgColor = e.target.value;
+        document.getElementById('mapContainer').style.backgroundColor = e.target.value;
+      });
+
+      // County view
+      document.getElementById('countyViewBtn').addEventListener('click', openCountySelector);
+      document.getElementById('backToStatesBtn').addEventListener('click', backToStateView);
+      document.getElementById('loadCountyViewBtn').addEventListener('click', () => {
+        const fips = document.getElementById('countyStateSelect').value;
+        if (fips) loadCountyView(fips);
+      });
+
+      // Pro code
+      document.getElementById('proCodeSubmit').addEventListener('click', () => {
+        const code = document.getElementById('proCodeInput').value.trim();
+        if (code === 'CAKEPRO2026' || code === 'cakemapper') {
+          appState.proUnlocked = true;
+          document.getElementById('upgradeModal').classList.remove('active');
+          showMessage('Pro features unlocked!', 'success');
+        } else {
+          showMessage('Invalid access code', 'error');
+        }
       });
 
       // Keyboard shortcuts
