@@ -336,12 +336,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: #1a1a2e;
       transition: background-color 0.3s ease;
-    }
-
-    body.light-mode .main {
-      background: #f5f5f5;
     }
 
     .map-container {
@@ -354,8 +349,16 @@
       flex-direction: column;
     }
 
+    .map-container.ocean-on {
+      background: #161f33;
+    }
+
     body.light-mode .map-container {
       background: #f5f5f5;
+    }
+
+    body.light-mode .map-container.ocean-on {
+      background: #e1e4ed;
     }
 
     svg {
@@ -985,13 +988,10 @@
 
     <!-- Main map area -->
     <div class="main">
-      <div class="map-container" id="mapContainer">
+      <div class="map-container ocean-on" id="mapContainer">
         <div class="map-title" id="mapTitle" contenteditable="true">My US Map</div>
         <div class="map-subtitle" id="mapSubtitle" contenteditable="true" data-placeholder="Click to add subtitle"></div>
         <svg id="mapSVG" viewBox="-20 -30 1010 710" preserveAspectRatio="xMidYMid meet">
-          <!-- Basemap: ocean background -->
-          <rect id="oceanBg" x="-20" y="-30" width="1010" height="710" fill="#1a3a5c" opacity="0.15"/>
-
           <g id="statesGroup" transform="translate(5, -20) scale(0.95)"></g>
 
           <!-- Puerto Rico (manually positioned near Hawaii inset) -->
@@ -1263,6 +1263,7 @@
 
       // Fine-tune offsets (applied AFTER centroid calculation, so much smaller adjustments needed)
       const labelOffsets = {
+        'Washington': { dx: 12, dy: 8 },
         'Florida': { dx: 18, dy: 10 },
         'Louisiana': { dx: -5, dy: 5 },
         'Hawaii': { dx: 0, dy: -5 },
@@ -1272,7 +1273,7 @@
         'New Jersey': { dx: 8, dy: 0 },
         'Connecticut': { dx: 8, dy: 3 },
         'Rhode Island': { dx: 10, dy: 3 },
-        'Massachusetts': { dx: 12, dy: -3 },
+        'Massachusetts': { dx: 5, dy: -3 },
         'Maryland': { dx: 5, dy: -5 },
         'New Hampshire': { dx: 3, dy: 3 },
         'Virginia': { dx: 5, dy: 0 },
@@ -2296,8 +2297,7 @@
         // Hide PR group, ocean, north arrow, scale bar in county mode
         const prGroup = document.getElementById('puertoRicoGroup');
         if (prGroup) prGroup.style.display = 'none';
-        const oceanBg = document.getElementById('oceanBg');
-        if (oceanBg) oceanBg.style.display = 'none';
+        document.getElementById('mapContainer').classList.remove('ocean-on');
         const northArrow = document.getElementById('northArrow');
         if (northArrow) northArrow.style.display = 'none';
         const scaleBarEl = document.getElementById('scaleBar');
@@ -2415,8 +2415,7 @@
       if (prGroup) prGroup.style.display = '';
 
       // Restore ocean, north arrow, scale bar
-      const oceanBg = document.getElementById('oceanBg');
-      if (oceanBg) oceanBg.style.display = appState.showBasemap ? '' : 'none';
+      document.getElementById('mapContainer').classList.toggle('ocean-on', appState.showBasemap);
       const northArrow = document.getElementById('northArrow');
       if (northArrow) northArrow.style.display = document.getElementById('toggleNorthArrow').checked ? '' : 'none';
       const scaleBarEl = document.getElementById('scaleBar');
@@ -2535,7 +2534,7 @@
       // Ocean toggle
       document.getElementById('toggleBasemap').addEventListener('change', (e) => {
         appState.showBasemap = e.target.checked;
-        document.getElementById('oceanBg').style.display = e.target.checked ? '' : 'none';
+        document.getElementById('mapContainer').classList.toggle('ocean-on', e.target.checked);
       });
 
       // North arrow toggle & position
