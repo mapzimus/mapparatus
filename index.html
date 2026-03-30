@@ -3150,9 +3150,10 @@
           statesGroup.setAttribute('transform', '');
         }
 
-        // Scale down stroke width for county view (borders too thick when zoomed in)
+        // Scale stroke width relative to viewBox (thinner when zoomed in)
+        const strokeScale = Math.min(viewW, viewH) / 1010;
         countyPaths.forEach(p => {
-          p.style.strokeWidth = '0.3';
+          p.style.strokeWidth = Math.max(0.05, 0.8 * strokeScale) + '';
         });
 
         // Recalculate bounds after rotation
