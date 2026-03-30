@@ -611,7 +611,7 @@
 
     /* Map Title & Subtitle */
     .map-title {
-      font-size: 26px;
+      font-size: 52px;
       font-weight: 800;
       text-align: center;
       color: #2B7A8C;
@@ -622,8 +622,6 @@
       transition: border-color 0.3s;
       outline: none;
       letter-spacing: -0.3px;
-      max-width: 600px;
-      margin: 0 auto;
     }
 
     .map-title:hover {
@@ -639,35 +637,32 @@
     }
 
     .map-subtitle {
-      font-size: 13px;
+      font-size: 15px;
       text-align: center;
       color: #8a9bb0;
-      padding: 2px 20px 16px;
+      padding: 4px 20px 12px;
       cursor: text;
-      border: 2px solid transparent;
-      border-radius: 4px;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
       transition: border-color 0.2s;
       outline: none;
-      min-height: 20px;
+      min-height: 24px;
       letter-spacing: 0.2px;
-      max-width: 600px;
-      margin: 0 auto;
+      display: block;
     }
 
-    .map-subtitle:empty {
-      min-height: 0;
-      padding: 0;
-      margin: 0;
-    }
-
-    .map-subtitle:focus:empty::before {
+    .map-subtitle:empty::before {
       content: attr(data-placeholder);
-      opacity: 0.35;
+      opacity: 0.3;
       pointer-events: none;
     }
 
+    .map-subtitle:focus:empty::before {
+      opacity: 0.5;
+    }
+
     .map-subtitle:hover, .map-subtitle:focus {
-      border-color: #a0a0a0;
+      border-color: rgba(43, 122, 140, 0.4);
     }
 
     body.light-mode .map-subtitle {
@@ -896,6 +891,164 @@
         height: 10px;
       }
     }
+    /* Onboarding Overlay */
+    .onboarding-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+
+    .onboarding-overlay.active {
+      display: flex;
+    }
+
+    .onboarding-card {
+      background: #16213e;
+      border: 1px solid #2B7A8C;
+      border-radius: 12px;
+      padding: 32px 36px;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(43, 122, 140, 0.15);
+      text-align: center;
+      animation: onboardingFadeIn 0.3s ease;
+    }
+
+    body.light-mode .onboarding-card {
+      background: #ffffff;
+      border-color: #2B7A8C;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 30px rgba(43, 122, 140, 0.1);
+    }
+
+    @keyframes onboardingFadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .onboarding-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .onboarding-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #2B7A8C;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .onboarding-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #a0a0a0;
+      margin-bottom: 24px;
+    }
+
+    body.light-mode .onboarding-desc {
+      color: #666;
+    }
+
+    .onboarding-steps {
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .onboarding-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .onboarding-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #2B7A8C;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .onboarding-step-text {
+      font-size: 13px;
+      color: #c0c0c0;
+      line-height: 1.5;
+      padding-top: 4px;
+    }
+
+    .onboarding-step-text strong {
+      color: #e0e0e0;
+    }
+
+    body.light-mode .onboarding-step-text {
+      color: #555;
+    }
+
+    body.light-mode .onboarding-step-text strong {
+      color: #333;
+    }
+
+    .onboarding-btn {
+      background: #2B7A8C;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .onboarding-btn:hover {
+      background: #3A9BB0;
+      transform: translateY(-1px);
+    }
+
+    .onboarding-btn:active {
+      transform: translateY(0);
+    }
+
+    .onboarding-skip {
+      display: block;
+      margin-top: 12px;
+      color: #666;
+      font-size: 11px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      text-decoration: underline;
+    }
+
+    .onboarding-skip:hover {
+      color: #999;
+    }
+
+    /* Pulsing hint for first-time color pick */
+    .pulse-hint {
+      animation: pulseHint 2s ease-in-out 3;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(43, 122, 140, 0); }
+      50% { box-shadow: 0 0 0 6px rgba(43, 122, 140, 0.3); }
+    }
+
   </style>
 </head>
 <body>
@@ -904,20 +1057,9 @@
     <div class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-title">Mapparatus</div>
-        <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
-      </div>
-
-      <!-- Instructions -->
-      <div class="section">
-        <div class="section-title">How to Use</div>
-        <div class="section-content">
-          <div class="instructions-text">
-            <strong>1.</strong> Pick a color below<br>
-            <strong>2.</strong> Tap any state to color it<br>
-            <strong>3.</strong> Right-click (or long-press) to remove<br>
-            <strong>4.</strong> Add a legend to label your colors<br>
-            <strong>5.</strong> Hit "Save as Image" when done
-          </div>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <button class="theme-toggle" id="helpBtn" title="How to use" style="font-size: 15px;">?</button>
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
         </div>
       </div>
 
@@ -1110,17 +1252,19 @@
           </g>
 
           <!-- Logo Watermark -->
-          <g id="logoWatermark" transform="translate(310, 580) scale(0.40)" opacity="0.35">
-            <g transform="translate(8, 8) scale(1.4)">
-              <polygon points="60,0 120,0 150,52 120,104 60,104 30,52" fill="#0D6E8A"/>
-              <polygon points="72,14 108,14 126,45 108,76 72,76 54,45" fill="#12A6C8" opacity="0.55"/>
-              <circle cx="90" cy="44" r="14" fill="white"/>
-              <polygon points="82,55 98,55 90,78" fill="white"/>
-              <circle cx="90" cy="44" r="6" fill="#0D6E8A"/>
+          <g id="logoWatermark" transform="translate(640, 580) scale(0.40)" opacity="0.35">
+            <g transform="translate(-392, 0)">
+              <g transform="translate(8, 8) scale(1.4)">
+                <polygon points="60,0 120,0 150,52 120,104 60,104 30,52" fill="#0D6E8A"/>
+                <polygon points="72,14 108,14 126,45 108,76 72,76 54,45" fill="#12A6C8" opacity="0.55"/>
+                <circle cx="90" cy="44" r="14" fill="white"/>
+                <polygon points="82,55 98,55 90,78" fill="white"/>
+                <circle cx="90" cy="44" r="6" fill="#0D6E8A"/>
+              </g>
+              <text x="230" y="96" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="#0D6E8A" letter-spacing="-1">map<tspan fill="#12A6C8">paratus</tspan></text>
+              <line x1="230" y1="112" x2="700" y2="112" stroke="#12A6C8" stroke-width="1" opacity="0.4"/>
+              <text x="232" y="138" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="300" fill="#5BA8BB" letter-spacing="5">simple maps, simple tools</text>
             </g>
-            <text x="230" y="96" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" fill="#0D6E8A" letter-spacing="-1">map<tspan fill="#12A6C8">paratus</tspan></text>
-            <line x1="230" y1="112" x2="850" y2="112" stroke="#12A6C8" stroke-width="1" opacity="0.4"/>
-            <text x="232" y="138" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="300" fill="#5BA8BB" letter-spacing="5">simple maps, simple tools</text>
           </g>
 
           <!-- Scale Bar -->
@@ -1199,6 +1343,35 @@
   </div>
 
   <div class="confirmation-message" id="confirmationMessage"></div>
+
+  <!-- Onboarding Welcome Overlay -->
+  <div class="onboarding-overlay" id="onboardingOverlay">
+    <div class="onboarding-card">
+      <div class="onboarding-icon">🗺</div>
+      <div class="onboarding-title">Welcome to Mapparatus</div>
+      <div class="onboarding-desc">Create beautiful colored maps of the US in seconds. Here's how it works:</div>
+      <div class="onboarding-steps">
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">1</div>
+          <div class="onboarding-step-text"><strong>Pick a color</strong> from the palette on the left</div>
+        </div>
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">2</div>
+          <div class="onboarding-step-text"><strong>Click any state</strong> on the map to color it. Right-click to remove.</div>
+        </div>
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">3</div>
+          <div class="onboarding-step-text"><strong>Add a legend</strong> to label what each color means</div>
+        </div>
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">4</div>
+          <div class="onboarding-step-text"><strong>Save as Image</strong> to download your finished map</div>
+        </div>
+      </div>
+      <button class="onboarding-btn" id="onboardingStart">Let's Make a Map</button>
+      <button class="onboarding-skip" id="onboardingSkip">I've been here before</button>
+    </div>
+  </div>
 
   <!-- External Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
@@ -1279,6 +1452,66 @@
       renderNorthArrow();
       renderScaleBar();
       updateStatsBar();
+      showOnboarding();
+    }
+
+    // ============================================================================
+    // ONBOARDING
+    // ============================================================================
+
+    function showOnboarding() {
+      // Only show on first visit (no states colored and no URL hash)
+      const hasVisited = localStorage.getItem('mapparatus_visited');
+      const hasHash = window.location.hash && window.location.hash.length > 1;
+      const hasColors = Object.keys(appState.stateColors).length > 0;
+
+      if (hasVisited || hasHash || hasColors) return;
+
+      const overlay = document.getElementById('onboardingOverlay');
+      overlay.classList.add('active');
+
+      document.getElementById('onboardingStart').addEventListener('click', () => {
+        dismissOnboarding();
+        startGuidedHints();
+      });
+
+      document.getElementById('onboardingSkip').addEventListener('click', () => {
+        dismissOnboarding();
+      });
+
+      // Also dismiss on overlay background click
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) dismissOnboarding();
+      });
+    }
+
+    function dismissOnboarding() {
+      const overlay = document.getElementById('onboardingOverlay');
+      overlay.classList.remove('active');
+      localStorage.setItem('mapparatus_visited', 'true');
+    }
+
+    function startGuidedHints() {
+      // Pulse the first color swatch to draw attention
+      const firstSwatch = document.querySelector('.color-swatch');
+      if (firstSwatch) {
+        firstSwatch.classList.add('pulse-hint');
+        setTimeout(() => firstSwatch.classList.remove('pulse-hint'), 6500);
+      }
+
+      // Show a brief floating hint near the map
+      const hint = document.createElement('div');
+      hint.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2B7A8C;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:2500;opacity:0;transition:opacity 0.4s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 15px rgba(43,122,140,0.4);';
+      hint.textContent = 'Pick a color, then click a state!';
+      document.body.appendChild(hint);
+
+      // Fade in after a beat
+      setTimeout(() => { hint.style.opacity = '1'; }, 300);
+      // Fade out and remove
+      setTimeout(() => {
+        hint.style.opacity = '0';
+        setTimeout(() => hint.remove(), 500);
+      }, 4000);
     }
 
     async function loadUSMap() {
@@ -2792,6 +3025,9 @@
 
       // Theme
       document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+      document.getElementById('helpBtn').addEventListener('click', () => {
+        document.getElementById('onboardingOverlay').classList.add('active');
+      });
 
       // Labels toggle
       document.getElementById('toggleLabels').addEventListener('change', (e) => {
