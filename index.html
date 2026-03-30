@@ -622,6 +622,8 @@
       transition: border-color 0.3s;
       outline: none;
       letter-spacing: -0.3px;
+      max-width: 600px;
+      margin: 0 auto;
     }
 
     .map-title:hover {
@@ -648,6 +650,8 @@
       outline: none;
       min-height: 20px;
       letter-spacing: 0.2px;
+      max-width: 600px;
+      margin: 0 auto;
     }
 
     .map-subtitle:empty {
@@ -872,6 +876,25 @@
         padding: 5px 8px;
         font-size: 10px;
       }
+      .legend-group {
+        max-width: 140px;
+        padding: 6px 8px;
+        bottom: 30px !important;
+        right: 8px !important;
+      }
+      .legend-title {
+        font-size: 9px;
+        margin-bottom: 4px;
+      }
+      .legend-item {
+        gap: 4px;
+        margin-bottom: 3px;
+        font-size: 9px;
+      }
+      .legend-item-color {
+        width: 10px;
+        height: 10px;
+      }
     }
   </style>
 </head>
@@ -889,11 +912,11 @@
         <div class="section-title">How to Use</div>
         <div class="section-content">
           <div class="instructions-text">
-            <strong>1.</strong> Select a color from the palette<br>
-            <strong>2.</strong> Click any state to apply the color<br>
-            <strong>3.</strong> Right-click a state to remove its color<br>
-            <strong>4.</strong> Add legend entries to label your colors<br>
-            <strong>5.</strong> Export your finished map
+            <strong>1.</strong> Pick a color below<br>
+            <strong>2.</strong> Tap any state to color it<br>
+            <strong>3.</strong> Right-click (or long-press) to remove<br>
+            <strong>4.</strong> Add a legend to label your colors<br>
+            <strong>5.</strong> Hit "Save as Image" when done
           </div>
         </div>
       </div>
@@ -903,11 +926,11 @@
         <div class="section-title">Color Palette</div>
         <div class="section-content">
           <div class="color-grid" id="colorGrid"></div>
-          <div class="color-inputs">
+          <div class="color-inputs" style="align-items: center;">
             <input type="color" id="colorPicker" class="color-picker-btn" value="#2B7A8C">
-            <input type="text" id="hexInput" class="hex-input" placeholder="#2B7A8C" maxlength="7">
+            <input type="text" id="hexInput" class="hex-input" placeholder="#2B7A8C" maxlength="7" style="display: none;">
+            <button class="btn secondary" id="addCustomColor" style="margin-bottom: 0; flex: 1;">+ Add Custom Color</button>
           </div>
-          <button class="btn secondary" id="addCustomColor">+ Add Custom</button>
         </div>
       </div>
 
@@ -916,7 +939,8 @@
         <div class="section-title">Legend</div>
         <div class="section-content">
           <div id="legendEntries"></div>
-          <button class="btn secondary" id="addLegendEntry">+ Add Entry</button>
+          <button class="btn" id="autoPopulateLegend" style="margin-bottom: 6px;">🎨 Add Colors from Map</button>
+          <button class="btn secondary" id="addLegendEntry" style="font-size: 10px;">+ Add Entry Manually</button>
         </div>
       </div>
 
@@ -1029,16 +1053,6 @@
         </div>
       </div>
 
-      <!-- Import Data -->
-      <div class="section">
-        <div class="section-title">Import</div>
-        <div class="section-content">
-          <button class="btn" id="importDataBtn">📊 Import CSV</button>
-          <div style="font-size: 10px; color: #a0a0a0; margin-top: 4px; line-height: 1.4;">
-            CSV with columns: State + Category/Color
-          </div>
-        </div>
-      </div>
 
       <!-- Pro Features -->
       <div class="section">
@@ -1063,12 +1077,15 @@
 
       <!-- Export -->
       <div class="section">
-        <div class="section-title">Export</div>
+        <div class="section-title">Save & Share</div>
         <div class="section-content">
-          <button class="btn" id="exportPNGBtn">⬇ Export PNG</button>
-          <button class="btn" id="exportSVGBtn">⬇ Export SVG</button>
-          <button class="btn" id="exportGeoJSONBtn">⬇ Export GeoJSON</button>
-          <button class="btn" id="exportCSVBtn">⬇ Export CSV</button>
+          <button class="btn" id="exportPNGBtn" style="font-size: 13px; padding: 10px 12px;">📷 Save as Image</button>
+          <button class="btn secondary" id="exportSVGBtn">🖼 Save for Print (SVG)
+            <span class="pro-badge">PRO</span>
+          </button>
+          <div style="font-size: 10px; color: #a0a0a0; margin-top: -2px; margin-bottom: 8px; line-height: 1.4;">
+            On mobile, long-press the image to save to camera roll
+          </div>
           <button class="btn secondary" id="copyShareLinkBtn">🔗 Copy Share Link</button>
           <button class="btn secondary" id="saveConfigBtn">💾 Save Config</button>
           <button class="btn secondary" id="loadConfigBtn">📂 Load Config</button>
@@ -1638,12 +1655,56 @@
     // ============================================================================
 
     function addLegendEntry() {
-      appState.legendEntries.push({
-        color: appState.selectedColor,
-        label: 'New Entry'
-      });
+      // Auto-populate from colors actually used on the map
+      const usedColors = [...new Set(Object.values(appState.stateColors))];
+      const legendColors = appState.legendEntries.map(e => e.color.toLowerCase());
+
+      if (usedColors.length > 0) {
+        // Find colors on the map that don't have legend entries yet
+        const unmatched = usedColors.filter(c => !legendColors.includes(c.toLowerCase()));
+        if (unmatched.length > 0) {
+          // Add the next unmatched color
+          appState.legendEntries.push({
+            color: unmatched[0],
+            label: ''
+          });
+        } else {
+          // All map colors already have entries — add with selected color
+          appState.legendEntries.push({
+            color: appState.selectedColor,
+            label: ''
+          });
+        }
+      } else {
+        appState.legendEntries.push({
+          color: appState.selectedColor,
+          label: ''
+        });
+      }
       updateLegendBuilder();
       updateLegendDisplay();
+    }
+
+    function autoPopulateLegend() {
+      // Add entries for all colors used on the map that aren't in the legend yet
+      const usedColors = [...new Set(Object.values(appState.stateColors))];
+      const legendColors = appState.legendEntries.map(e => e.color.toLowerCase());
+      let added = 0;
+      usedColors.forEach(color => {
+        if (!legendColors.includes(color.toLowerCase())) {
+          appState.legendEntries.push({ color, label: '' });
+          added++;
+        }
+      });
+      if (added > 0) {
+        updateLegendBuilder();
+        updateLegendDisplay();
+        showMessage(`Added ${added} color${added > 1 ? 's' : ''} from the map`, 'success');
+      } else if (usedColors.length === 0) {
+        showMessage('Color some states first, then build your legend', 'info');
+      } else {
+        showMessage('All map colors are already in the legend', 'info');
+      }
     }
 
     function updateLegendEntry(index, field, value) {
@@ -1670,6 +1731,18 @@
         const colorEl = document.createElement('div');
         colorEl.className = 'legend-color';
         colorEl.style.backgroundColor = entry.color;
+        colorEl.style.cursor = 'pointer';
+        colorEl.title = 'Click to change color';
+        // Hidden color picker for this entry
+        const entryColorPicker = document.createElement('input');
+        entryColorPicker.type = 'color';
+        entryColorPicker.value = entry.color;
+        entryColorPicker.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
+        entryColorPicker.addEventListener('input', (e) => {
+          updateLegendEntry(index, 'color', e.target.value);
+          colorEl.style.backgroundColor = e.target.value;
+        });
+        colorEl.addEventListener('click', () => entryColorPicker.click());
 
         const inputsEl = document.createElement('div');
         inputsEl.className = 'legend-inputs';
@@ -1678,7 +1751,7 @@
         labelInput.type = 'text';
         labelInput.className = 'legend-label-input';
         labelInput.value = entry.label;
-        labelInput.placeholder = 'Label';
+        labelInput.placeholder = 'Type a label...';
         labelInput.addEventListener('change', (e) => updateLegendEntry(index, 'label', e.target.value));
 
         const removeBtn = document.createElement('button');
@@ -1687,6 +1760,7 @@
         removeBtn.addEventListener('click', () => removeLegendEntry(index));
 
         inputsEl.appendChild(labelInput);
+        entryEl.appendChild(entryColorPicker);
         entryEl.appendChild(colorEl);
         entryEl.appendChild(inputsEl);
         entryEl.appendChild(removeBtn);
@@ -1898,6 +1972,21 @@
       svg.style.minHeight = 'auto';
       svg.style.height = 'auto';
 
+      // Scale legend down for export so it doesn't dominate the image
+      const legendEl = document.getElementById('legendDisplay');
+      const origLegendStyle = legendEl ? legendEl.style.cssText : '';
+      if (legendEl && legendEl.style.display !== 'none') {
+        const isMobileExport = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobileExport) {
+          legendEl.style.maxWidth = '120px';
+          legendEl.style.padding = '5px 7px';
+          legendEl.style.fontSize = '9px';
+          legendEl.querySelectorAll('.legend-title').forEach(t => t.style.fontSize = '8px');
+          legendEl.querySelectorAll('.legend-item').forEach(i => { i.style.fontSize = '8px'; i.style.gap = '3px'; i.style.marginBottom = '2px'; });
+          legendEl.querySelectorAll('.legend-item-color').forEach(c => { c.style.width = '8px'; c.style.height = '8px'; });
+        }
+      }
+
       const bgColor = appState.bgColor || (appState.darkMode ? '#1a1a2e' : '#f5f5f5');
 
       html2canvas(mapContainer, {
@@ -1959,6 +2048,11 @@
         svg.style.flex = origSvgFlex;
         svg.style.minHeight = origSvgMinH;
         svg.style.height = '';
+        // Restore legend
+        if (legendEl) {
+          legendEl.style.cssText = origLegendStyle;
+          updateLegendDisplay();
+        }
       });
     }
 
@@ -2665,6 +2759,7 @@
 
       // Legend
       document.getElementById('addLegendEntry').addEventListener('click', addLegendEntry);
+      document.getElementById('autoPopulateLegend').addEventListener('click', autoPopulateLegend);
 
       // Quick Fill
       document.getElementById('selectAllBtn').addEventListener('click', selectAll);
@@ -2691,14 +2786,9 @@
       // Export
       document.getElementById('exportPNGBtn').addEventListener('click', exportPNG);
       document.getElementById('exportSVGBtn').addEventListener('click', exportSVG);
-      document.getElementById('exportGeoJSONBtn').addEventListener('click', exportGeoJSON);
-      document.getElementById('exportCSVBtn').addEventListener('click', exportCSV);
       document.getElementById('copyShareLinkBtn').addEventListener('click', copyShareLink);
       document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
       document.getElementById('loadConfigBtn').addEventListener('click', loadConfig);
-
-      // Import CSV
-      document.getElementById('importDataBtn').addEventListener('click', importCSVData);
 
       // Theme
       document.getElementById('themeToggle').addEventListener('click', toggleTheme);
