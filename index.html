@@ -404,7 +404,7 @@
       text-anchor: middle;
       dominant-baseline: middle;
       pointer-events: none;
-      fill: #a0a0a0;
+      fill: #b8b8b8;
       transition: fill 0.2s;
     }
 
@@ -1130,7 +1130,7 @@
             <div style="display: flex; gap: 6px;">
               <select id="scalePositionSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; flex: 1;">
                 <option value="bottom-right">Bottom Right</option>
-                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-left" selected>Bottom Left</option>
                 <option value="bottom-center">Bottom Center</option>
               </select>
               <select id="scaleUnitSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 65px;">
@@ -1272,7 +1272,7 @@
           </g>
 
           <!-- Scale Bar -->
-          <g id="scaleBar" transform="translate(700, 645)" opacity="0.7">
+          <g id="scaleBar" transform="translate(30, 645)" opacity="0.7">
             <line x1="0" y1="0" x2="180" y2="0" stroke="currentColor" stroke-width="2"/>
             <line x1="0" y1="-5" x2="0" y2="5" stroke="currentColor" stroke-width="1.5"/>
             <line x1="90" y1="-4" x2="90" y2="4" stroke="currentColor" stroke-width="1"/>
@@ -1400,7 +1400,7 @@
       arrowPosition: 'top-right',
       arrowColor: '#ffffff',
       arrowStyle: 'classic',
-      scalePosition: 'bottom-right',
+      scalePosition: 'bottom-left',
       scaleColor: '#ffffff',
       scaleStyle: 'classic',
       showBasemap: true,
@@ -2197,6 +2197,11 @@
       const statsBar = document.getElementById('statsBar');
       statsBar.style.display = 'none';
 
+      // Hide empty subtitle placeholder text during export
+      const subtitleEl = document.getElementById('mapSubtitle');
+      const subtitleWasEmpty = subtitleEl && subtitleEl.textContent.trim() === '';
+      if (subtitleWasEmpty) subtitleEl.style.display = 'none';
+
       // Temporarily force map container to show full content
       const mapContainer = document.getElementById('mapContainer');
       const svg = document.getElementById('mapSVG');
@@ -2280,6 +2285,7 @@
       }).finally(() => {
         // Restore stats bar and layout
         statsBar.style.display = '';
+        if (subtitleWasEmpty && subtitleEl) subtitleEl.style.display = '';
         mapContainer.style.overflow = origOverflow;
         svg.style.flex = origSvgFlex;
         svg.style.minHeight = origSvgMinH;
@@ -2320,7 +2326,7 @@
 
       clone.querySelectorAll('.state-label').forEach(l => {
         if (!l.style.fill) {
-          l.style.fill = appState.darkMode ? '#a0a0a0' : '#666';
+          l.style.fill = appState.darkMode ? '#b8b8b8' : '#666';
         }
         l.style.fontSize = '10px';
         l.style.fontWeight = '600';
