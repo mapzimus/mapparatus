@@ -3126,7 +3126,8 @@
         const viewY = minY - (viewH - stateH) / 2;
         svg.setAttribute('viewBox', `${viewX} ${viewY} ${viewW} ${viewH}`);
 
-        // Add county name labels
+        // Add county name labels scaled to viewBox
+        const labelScale = Math.min(viewW, viewH) / 400;
         countyPaths.forEach((p, i) => {
           const bbox = p.getBBox();
           const cx = bbox.x + bbox.width / 2;
@@ -3136,13 +3137,16 @@
             const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             label.setAttribute('x', cx);
             label.setAttribute('y', cy);
-            label.setAttribute('class', 'state-label');
-            // Scale font size based on county area
-            const area = bbox.width * bbox.height;
-            const fontSize = Math.max(3, Math.min(8, Math.sqrt(area) * 0.15));
-            label.setAttribute('font-size', fontSize);
-            label.textContent = countyName;
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('dominant-baseline', 'middle');
+            // Scale font relative to county size and viewBox
+            const countySize = Math.min(bbox.width, bbox.height);
+            const fontSize = Math.max(1.5 * labelScale, Math.min(5 * labelScale, countySize * 0.25));
+            label.style.fontSize = fontSize + 'px';
+            label.style.fontWeight = '600';
+            label.style.fill = '#b8b8b8';
             label.style.pointerEvents = 'none';
+            label.textContent = countyName;
             statesGroup.appendChild(label);
           }
         });
