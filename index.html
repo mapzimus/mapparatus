@@ -377,8 +377,8 @@
 
     .state-path {
       fill: #2a2a4a;
-      stroke: #3a3a5a;
-      stroke-width: 1;
+      stroke: #3d3d5c;
+      stroke-width: 0.8;
       cursor: pointer;
       transition: fill 0.2s, stroke 0.2s;
     }
@@ -399,8 +399,8 @@
     }
 
     .state-label {
-      font-size: 10px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-anchor: middle;
       dominant-baseline: middle;
       pointer-events: none;
@@ -416,47 +416,50 @@
       position: absolute;
       bottom: 50px;
       right: 20px;
-      background: rgba(22, 33, 62, 0.9);
-      border: 1px solid #3a3a5a;
-      border-radius: 6px;
-      padding: 12px;
-      max-width: 250px;
-      backdrop-filter: blur(4px);
+      background: rgba(22, 33, 62, 0.92);
+      border: 1px solid rgba(43, 122, 140, 0.3);
+      border-radius: 8px;
+      padding: 16px 20px;
+      max-width: 320px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     body.light-mode .legend-group {
-      background: rgba(255, 255, 255, 0.92);
-      border-color: #e0e0e0;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.94);
+      border-color: #d0d8e0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     .legend-title {
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 10px;
       color: #2B7A8C;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
     }
 
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-      font-size: 11px;
-      color: #a0a0a0;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #c8d0d8;
     }
 
     body.light-mode .legend-item {
-      color: #666;
+      color: #444;
     }
 
     .legend-item-color {
-      width: 16px;
-      height: 16px;
-      border-radius: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
       flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .tooltip {
@@ -637,17 +640,18 @@
     }
 
     .map-subtitle {
-      font-size: 15px;
+      font-size: 18px;
       text-align: center;
       color: #8a9bb0;
-      padding: 4px 20px 12px;
+      padding: 4px 20px 14px;
       cursor: text;
       border-bottom: 2px solid transparent;
       border-radius: 0;
       transition: border-color 0.2s;
       outline: none;
-      min-height: 24px;
-      letter-spacing: 0.2px;
+      min-height: 26px;
+      letter-spacing: 0.3px;
+      font-weight: 400;
       display: block;
     }
 
@@ -872,23 +876,23 @@
         font-size: 10px;
       }
       .legend-group {
-        max-width: 140px;
-        padding: 6px 8px;
+        max-width: 180px;
+        padding: 10px 12px;
         bottom: 30px !important;
-        right: 8px !important;
+        right: 10px !important;
       }
       .legend-title {
-        font-size: 9px;
-        margin-bottom: 4px;
+        font-size: 11px;
+        margin-bottom: 6px;
       }
       .legend-item {
-        gap: 4px;
-        margin-bottom: 3px;
-        font-size: 9px;
+        gap: 6px;
+        margin-bottom: 5px;
+        font-size: 11px;
       }
       .legend-item-color {
-        width: 10px;
-        height: 10px;
+        width: 14px;
+        height: 14px;
       }
     }
     /* Onboarding Overlay */
@@ -1110,7 +1114,7 @@
                 <option value="bottom-right">Bottom Right</option>
                 <option value="bottom-left">Bottom Left</option>
               </select>
-              <input type="color" id="arrowColorPicker" value="#333333" style="width: 28px; height: 24px; border: none; padding: 0; cursor: pointer; background: none;">
+              <input type="color" id="arrowColorPicker" value="#ffffff" style="width: 28px; height: 24px; border: none; padding: 0; cursor: pointer; background: none;">
             </div>
             <select id="arrowStyleSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 100%;">
               <option value="classic">Classic</option>
@@ -1133,7 +1137,7 @@
                 <option value="imperial">mi</option>
                 <option value="metric">km</option>
               </select>
-              <input type="color" id="scaleColorPicker" value="#333333" style="width: 28px; height: 24px; border: none; padding: 0; cursor: pointer; background: none;">
+              <input type="color" id="scaleColorPicker" value="#ffffff" style="width: 28px; height: 24px; border: none; padding: 0; cursor: pointer; background: none;">
             </div>
             <select id="scaleStyleSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 100%;">
               <option value="classic">Classic</option>
@@ -1244,7 +1248,7 @@
           <g id="statesGroup" transform="translate(5, -20) scale(0.95)"></g>
 
           <!-- North Arrow -->
-          <g id="northArrow" transform="translate(940, 30)" opacity="0.4">
+          <g id="northArrow" transform="translate(940, 30)" opacity="0.7">
             <circle cx="0" cy="0" r="18" fill="none" stroke="currentColor" stroke-width="0.8"/>
             <polygon points="0,-15 -5,2 0,-4 5,2" fill="currentColor"/>
             <line x1="0" y1="2" x2="0" y2="15" stroke="currentColor" stroke-width="1.5"/>
@@ -1252,7 +1256,7 @@
           </g>
 
           <!-- Logo Watermark -->
-          <g id="logoWatermark" transform="translate(640, 580) scale(0.40)" opacity="0.35">
+          <g id="logoWatermark" transform="translate(640, 580) scale(0.40)" opacity="0.45">
             <g transform="translate(-392, 0)">
               <g transform="translate(8, 8) scale(1.4)">
                 <polygon points="60,0 120,0 150,52 120,104 60,104 30,52" fill="#0D6E8A"/>
@@ -1268,7 +1272,7 @@
           </g>
 
           <!-- Scale Bar -->
-          <g id="scaleBar" transform="translate(700, 645)" opacity="0.4">
+          <g id="scaleBar" transform="translate(700, 645)" opacity="0.7">
             <line x1="0" y1="0" x2="180" y2="0" stroke="currentColor" stroke-width="2"/>
             <line x1="0" y1="-5" x2="0" y2="5" stroke="currentColor" stroke-width="1.5"/>
             <line x1="90" y1="-4" x2="90" y2="4" stroke="currentColor" stroke-width="1"/>
@@ -1394,10 +1398,10 @@
       scaleUnit: 'imperial',
       legendPosition: 'bottom-right',
       arrowPosition: 'top-right',
-      arrowColor: '#333333',
+      arrowColor: '#ffffff',
       arrowStyle: 'classic',
       scalePosition: 'bottom-right',
-      scaleColor: '#333333',
+      scaleColor: '#ffffff',
       scaleStyle: 'classic',
       showBasemap: true,
       history: [],
@@ -2211,12 +2215,11 @@
       if (legendEl && legendEl.style.display !== 'none') {
         const isMobileExport = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         if (isMobileExport) {
-          legendEl.style.maxWidth = '120px';
-          legendEl.style.padding = '5px 7px';
-          legendEl.style.fontSize = '9px';
-          legendEl.querySelectorAll('.legend-title').forEach(t => t.style.fontSize = '8px');
-          legendEl.querySelectorAll('.legend-item').forEach(i => { i.style.fontSize = '8px'; i.style.gap = '3px'; i.style.marginBottom = '2px'; });
-          legendEl.querySelectorAll('.legend-item-color').forEach(c => { c.style.width = '8px'; c.style.height = '8px'; });
+          legendEl.style.maxWidth = '160px';
+          legendEl.style.padding = '8px 10px';
+          legendEl.querySelectorAll('.legend-title').forEach(t => t.style.fontSize = '11px');
+          legendEl.querySelectorAll('.legend-item').forEach(i => { i.style.fontSize = '11px'; i.style.gap = '6px'; i.style.marginBottom = '4px'; });
+          legendEl.querySelectorAll('.legend-item-color').forEach(c => { c.style.width = '14px'; c.style.height = '14px'; });
         }
       }
 
@@ -2542,7 +2545,7 @@
     function renderNorthArrow() {
       const g = document.getElementById('northArrow');
       if (!g) return;
-      const color = appState.arrowColor || '#333333';
+      const color = appState.arrowColor || '#ffffff';
       const style = appState.arrowStyle || 'classic';
 
       let markup = '';
@@ -2584,7 +2587,7 @@
     function renderScaleBar() {
       const g = document.getElementById('scaleBar');
       if (!g) return;
-      const color = appState.scaleColor || '#333333';
+      const color = appState.scaleColor || '#ffffff';
       const style = appState.scaleStyle || 'classic';
 
       const midVal = appState.scaleUnit === 'metric' ? '320' : '200';
