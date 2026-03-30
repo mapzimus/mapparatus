@@ -336,6 +336,90 @@
       letter-spacing: 0.5px;
     }
 
+    .pro-badge-inline {
+      background: linear-gradient(135deg, #f0c27f, #e2a04e);
+      color: #1a1a2e;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 6px;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    .pro-locked-overlay {
+      position: relative;
+    }
+
+    .pro-locked-overlay::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(22, 33, 62, 0.5);
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .export-counter {
+      background: rgba(43, 122, 140, 0.15);
+      border: 1px solid rgba(43, 122, 140, 0.3);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: #8a9bb0;
+      text-align: center;
+    }
+
+    .export-counter strong {
+      color: #4ecdc4;
+      font-weight: 700;
+    }
+
+    .export-counter.low {
+      border-color: rgba(255, 107, 107, 0.4);
+      background: rgba(255, 107, 107, 0.1);
+    }
+
+    .export-counter.low strong {
+      color: #ff6b6b;
+    }
+
+    .upgrade-banner {
+      background: linear-gradient(135deg, rgba(43, 122, 140, 0.2), rgba(78, 205, 196, 0.1));
+      border: 1px solid rgba(43, 122, 140, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upgrade-banner:hover {
+      border-color: rgba(43, 122, 140, 0.6);
+      background: linear-gradient(135deg, rgba(43, 122, 140, 0.3), rgba(78, 205, 196, 0.15));
+    }
+
+    .upgrade-banner-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #4ecdc4;
+      margin-bottom: 4px;
+    }
+
+    .upgrade-banner-text {
+      font-size: 10px;
+      color: #8a9bb0;
+      line-height: 1.4;
+    }
+
     /* Main map area */
     .main {
       flex: 1;
@@ -1081,9 +1165,9 @@
       </div>
 
       <!-- Legend Builder -->
-      <div class="section">
-        <div class="section-title">Legend</div>
-        <div class="section-content">
+      <div class="section" id="legendSection">
+        <div class="section-title">Legend <span class="pro-badge-inline" onclick="showUpgradeModal()">PRO</span></div>
+        <div class="section-content" id="legendContent">
           <div id="legendEntries"></div>
           <button class="btn" id="autoPopulateLegend" style="margin-bottom: 6px;">🎨 Add Colors from Map</button>
           <button class="btn secondary" id="addLegendEntry" style="font-size: 10px;">+ Add Entry Manually</button>
@@ -1174,8 +1258,8 @@
       </div>
 
       <!-- Quick Fill -->
-      <div class="section">
-        <div class="section-title">Quick Fill</div>
+      <div class="section" id="quickFillSection">
+        <div class="section-title">Quick Fill <span class="pro-badge-inline" onclick="showUpgradeModal()">PRO</span></div>
         <div class="section-content">
           <button class="btn secondary" id="selectAllBtn" style="margin-bottom: 8px;">✓ Select All</button>
           <div class="region-buttons" id="regionButtons">
@@ -1225,6 +1309,9 @@
       <div class="section">
         <div class="section-title">Save & Share</div>
         <div class="section-content">
+          <div class="export-counter" id="exportCounter" style="display: none;">
+            <strong id="exportCountNum">3</strong> free exports remaining this month
+          </div>
           <button class="btn" id="exportPNGBtn" style="font-size: 13px; padding: 10px 12px;">📷 Save as Image</button>
           <button class="btn secondary" id="exportSVGBtn">🖼 Save for Print (SVG)
             <span class="pro-badge">PRO</span>
@@ -1232,10 +1319,20 @@
           <div style="font-size: 10px; color: #a0a0a0; margin-top: -2px; margin-bottom: 8px; line-height: 1.4;">
             On mobile, long-press the image to save to camera roll
           </div>
-          <button class="btn secondary" id="copyShareLinkBtn">🔗 Copy Share Link</button>
-          <button class="btn secondary" id="saveConfigBtn">💾 Save Config</button>
+          <button class="btn secondary btn-pro" id="copyShareLinkBtn">🔗 Copy Share Link
+            <span class="pro-badge">PRO</span>
+          </button>
+          <button class="btn secondary btn-pro" id="saveConfigBtn">💾 Save Config
+            <span class="pro-badge">PRO</span>
+          </button>
           <button class="btn secondary" id="loadConfigBtn">📂 Load Config</button>
         </div>
+      </div>
+
+      <!-- Upgrade Banner (free users only) -->
+      <div class="upgrade-banner" id="upgradeBanner" onclick="showUpgradeModal()">
+        <div class="upgrade-banner-title">Unlock Mapparatus Pro</div>
+        <div class="upgrade-banner-text">Legend builder, subtitles, region fill, unlimited exports, no watermark, and more. <strong style="color: #4ecdc4;">$5/mo</strong></div>
       </div>
     </div>
 
@@ -1301,19 +1398,47 @@
 
   <!-- Modals -->
   <div class="modal-overlay" id="upgradeModal">
-    <div class="modal">
-      <div class="modal-title">Upgrade to Mapparatus Pro</div>
-      <div class="modal-subtitle">Unlock advanced features</div>
+    <div class="modal" style="max-width: 420px;">
+      <div class="modal-title" style="font-size: 20px; text-align: center;">Upgrade to Pro</div>
+      <div class="modal-subtitle" style="text-align: center; margin-bottom: 16px;">Make maps that look professional</div>
       <div class="modal-content">
-        <p>Pro features include county-level mapping, advanced data import, and more export options.</p>
-        <p style="margin-top: 10px;"><strong>Coming soon!</strong> Enter code below to unlock early access.</p>
-        <div style="margin-top: 12px; display: flex; gap: 8px;">
-          <input type="text" id="proCodeInput" placeholder="Enter access code" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #3a3a5a; background: #1a1a2e; color: #e0e0e0; font-size: 12px;">
-          <button class="btn" id="proCodeSubmit" style="width: auto;">Unlock</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+          <div style="background: rgba(43, 122, 140, 0.1); border-radius: 6px; padding: 10px; text-align: center;">
+            <div style="font-size: 20px; margin-bottom: 4px;">🏷</div>
+            <div style="font-size: 11px; font-weight: 600; color: #4ecdc4;">Legend Builder</div>
+            <div style="font-size: 9px; color: #8a9bb0; margin-top: 2px;">Label your colors</div>
+          </div>
+          <div style="background: rgba(43, 122, 140, 0.1); border-radius: 6px; padding: 10px; text-align: center;">
+            <div style="font-size: 20px; margin-bottom: 4px;">📝</div>
+            <div style="font-size: 11px; font-weight: 600; color: #4ecdc4;">Subtitles</div>
+            <div style="font-size: 9px; color: #8a9bb0; margin-top: 2px;">Add context to maps</div>
+          </div>
+          <div style="background: rgba(43, 122, 140, 0.1); border-radius: 6px; padding: 10px; text-align: center;">
+            <div style="font-size: 20px; margin-bottom: 4px;">🗺</div>
+            <div style="font-size: 11px; font-weight: 600; color: #4ecdc4;">County Maps</div>
+            <div style="font-size: 9px; color: #8a9bb0; margin-top: 2px;">Drill into any state</div>
+          </div>
+          <div style="background: rgba(43, 122, 140, 0.1); border-radius: 6px; padding: 10px; text-align: center;">
+            <div style="font-size: 20px; margin-bottom: 4px;">📷</div>
+            <div style="font-size: 11px; font-weight: 600; color: #4ecdc4;">Unlimited Exports</div>
+            <div style="font-size: 9px; color: #8a9bb0; margin-top: 2px;">No watermark</div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="font-size: 28px; font-weight: 800; color: #4ecdc4;">$5<span style="font-size: 14px; font-weight: 400; color: #8a9bb0;">/month</span></div>
+          <div style="font-size: 10px; color: #8a9bb0;">or $48/year (save 20%)</div>
+        </div>
+        <button class="btn" id="proSubscribeBtn" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #2B7A8C, #3A9BB0); margin-bottom: 8px;">Start Free Trial — Coming Soon</button>
+        <div style="text-align: center; margin-top: 8px;">
+          <div style="font-size: 10px; color: #666; margin-bottom: 8px;">Have an access code?</div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="proCodeInput" placeholder="Enter access code" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #3a3a5a; background: #1a1a2e; color: #e0e0e0; font-size: 12px;">
+            <button class="btn" id="proCodeSubmit" style="width: auto;">Unlock</button>
+          </div>
         </div>
       </div>
       <div class="modal-actions">
-        <button class="btn secondary" onclick="document.getElementById('upgradeModal').classList.remove('active')">Close</button>
+        <button class="btn secondary" onclick="closeUpgradeModal()">Maybe Later</button>
       </div>
     </div>
   </div>
@@ -1457,6 +1582,7 @@
       renderScaleBar();
       updateStatsBar();
       showOnboarding();
+      updateProGates();
     }
 
     // ============================================================================
@@ -1726,6 +1852,14 @@
       titleEl.addEventListener('blur', () => {
         appState.mapTitle = titleEl.textContent || 'My US Map';
         updateURL();
+      });
+
+      // Gate subtitle editing for free users
+      subtitleEl.addEventListener('focus', () => {
+        if (!isPro()) {
+          subtitleEl.blur();
+          showUpgradeModal();
+        }
       });
 
       subtitleEl.addEventListener('blur', () => {
@@ -2190,8 +2324,91 @@
       return appState.proUnlocked;
     }
 
+    function showUpgradeModal() {
+      document.getElementById('upgradeModal').classList.add('active');
+    }
+
+    function closeUpgradeModal() {
+      document.getElementById('upgradeModal').classList.remove('active');
+    }
+
+    // --- Export Counter (free tier: 3/month) ---
+    function getExportCount() {
+      const data = JSON.parse(localStorage.getItem('mapparatus_exports') || '{}');
+      const now = new Date();
+      const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+      if (data.month !== monthKey) {
+        return { month: monthKey, count: 0 };
+      }
+      return data;
+    }
+
+    function incrementExportCount() {
+      const data = getExportCount();
+      data.count++;
+      localStorage.setItem('mapparatus_exports', JSON.stringify(data));
+      updateExportCounter();
+    }
+
+    function canExport() {
+      if (isPro()) return true;
+      return getExportCount().count < 3;
+    }
+
+    function updateExportCounter() {
+      const counter = document.getElementById('exportCounter');
+      const countNum = document.getElementById('exportCountNum');
+      if (isPro()) {
+        counter.style.display = 'none';
+        return;
+      }
+      counter.style.display = '';
+      const remaining = Math.max(0, 3 - getExportCount().count);
+      countNum.textContent = remaining;
+      counter.querySelector('#exportCountNum').parentNode.innerHTML =
+        remaining === 0
+          ? '<strong style="color: #ff6b6b;">0</strong> free exports remaining — <a href="#" onclick="showUpgradeModal(); return false;" style="color: #4ecdc4; text-decoration: underline;">upgrade to Pro</a>'
+          : `<strong>${remaining}</strong> free export${remaining !== 1 ? 's' : ''} remaining this month`;
+      counter.classList.toggle('low', remaining <= 1);
+    }
+
+    // --- Pro Gate Helpers ---
+    function updateProGates() {
+      const pro = isPro();
+      // Hide/show Pro badges
+      document.querySelectorAll('.pro-badge-inline').forEach(el => {
+        el.style.display = pro ? 'none' : '';
+      });
+      // Hide upgrade banner for pro users
+      const banner = document.getElementById('upgradeBanner');
+      if (banner) banner.style.display = pro ? 'none' : '';
+      // Update export counter
+      updateExportCounter();
+      // Enable/disable subtitle
+      const subtitle = document.getElementById('mapSubtitle');
+      if (subtitle && !pro) {
+        subtitle.dataset.placeholder = 'Add subtitle (Pro)';
+      } else if (subtitle) {
+        subtitle.dataset.placeholder = 'Click to add subtitle';
+      }
+    }
+
+    function gateProFeature(featureName) {
+      if (isPro()) return true;
+      showUpgradeModal();
+      return false;
+    }
+
     function exportPNG() {
+      if (!canExport()) {
+        showUpgradeModal();
+        showMessage('Free export limit reached this month', 'error');
+        return;
+      }
       showMessage('Exporting PNG...', 'info');
+
+      // Track export for free users
+      if (!isPro()) incrementExportCount();
 
       // Hide stats bar for export
       const statsBar = document.getElementById('statsBar');
@@ -2950,7 +3167,7 @@
 
     function openCountySelector() {
       if (!appState.proUnlocked) {
-        document.getElementById('upgradeModal').classList.add('active');
+        showUpgradeModal();
         return;
       }
 
@@ -2999,14 +3216,27 @@
         }
       });
 
-      // Legend
-      document.getElementById('addLegendEntry').addEventListener('click', addLegendEntry);
-      document.getElementById('autoPopulateLegend').addEventListener('click', autoPopulateLegend);
+      // Legend (Pro-gated)
+      document.getElementById('addLegendEntry').addEventListener('click', () => {
+        if (!gateProFeature('legend')) return;
+        addLegendEntry();
+      });
+      document.getElementById('autoPopulateLegend').addEventListener('click', () => {
+        if (!gateProFeature('legend')) return;
+        autoPopulateLegend();
+      });
 
-      // Quick Fill
-      document.getElementById('selectAllBtn').addEventListener('click', selectAll);
-      document.getElementById('invertSelectionBtn').addEventListener('click', invertSelection);
+      // Quick Fill (Pro-gated)
+      document.getElementById('selectAllBtn').addEventListener('click', () => {
+        if (!gateProFeature('quick fill')) return;
+        selectAll();
+      });
+      document.getElementById('invertSelectionBtn').addEventListener('click', () => {
+        if (!gateProFeature('invert')) return;
+        invertSelection();
+      });
       document.getElementById('clearRegionBtn').addEventListener('click', () => {
+        if (!gateProFeature('region clear')) return;
         const region = document.getElementById('clearRegionSelect').value;
         if (region) {
           clearRegion(region);
@@ -3015,6 +3245,7 @@
       });
       document.querySelectorAll('.region-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+          if (!gateProFeature('region fill')) return;
           const region = e.target.getAttribute('data-region');
           colorRegion(region);
         });
@@ -3027,9 +3258,18 @@
 
       // Export
       document.getElementById('exportPNGBtn').addEventListener('click', exportPNG);
-      document.getElementById('exportSVGBtn').addEventListener('click', exportSVG);
-      document.getElementById('copyShareLinkBtn').addEventListener('click', copyShareLink);
-      document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+      document.getElementById('exportSVGBtn').addEventListener('click', () => {
+        if (!gateProFeature('SVG export')) return;
+        exportSVG();
+      });
+      document.getElementById('copyShareLinkBtn').addEventListener('click', () => {
+        if (!gateProFeature('share links')) return;
+        copyShareLink();
+      });
+      document.getElementById('saveConfigBtn').addEventListener('click', () => {
+        if (!gateProFeature('save config')) return;
+        saveConfig();
+      });
       document.getElementById('loadConfigBtn').addEventListener('click', loadConfig);
 
       // Theme
@@ -3059,7 +3299,7 @@
       document.getElementById('toggleLogo').addEventListener('change', (e) => {
         if (!e.target.checked && !appState.proUnlocked) {
           e.target.checked = true;
-          document.getElementById('upgradeModal').style.display = 'flex';
+          showUpgradeModal();
           return;
         }
         appState.showLogo = e.target.checked;
@@ -3137,8 +3377,9 @@
         const code = document.getElementById('proCodeInput').value.trim();
         if (code === 'MAPPRO2026' || code === 'mapparatus') {
           appState.proUnlocked = true;
-          document.getElementById('upgradeModal').classList.remove('active');
-          showMessage('Pro features unlocked!', 'success');
+          closeUpgradeModal();
+          updateProGates();
+          showMessage('Pro features unlocked! All features are now available.', 'success');
         } else {
           showMessage('Invalid access code', 'error');
         }
