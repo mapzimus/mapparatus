@@ -499,8 +499,6 @@
 
     .legend-group {
       position: absolute;
-      bottom: 50px;
-      right: 20px;
       background: rgba(22, 33, 62, 0.92);
       border: 1px solid rgba(43, 122, 140, 0.3);
       border-radius: 8px;
@@ -917,17 +915,18 @@
       }
       .sidebar {
         width: 100%;
-        max-height: 45vh;
+        max-height: none;
         border-right: none;
         border-bottom: 1px solid #3a3a5a;
         padding: 15px;
+        -webkit-overflow-scrolling: touch;
       }
       body.light-mode .sidebar {
         border-bottom-color: #e0e0e0;
       }
       .map-area {
         flex: 1;
-        min-height: 55vh;
+        min-height: 50vh;
       }
       .sidebar-header {
         margin-bottom: 15px;
@@ -941,12 +940,26 @@
       }
       .section-title {
         font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .section-title::after {
+        content: '▾';
+        font-size: 10px;
+        transition: transform 0.2s;
+      }
+      .section.collapsed .section-title::after {
+        transform: rotate(-90deg);
+      }
+      .section.collapsed .section-content {
+        display: none;
       }
     }
 
     @media (max-width: 600px) {
       .sidebar {
-        max-height: 40vh;
         padding: 10px;
       }
       .color-grid {
@@ -963,8 +976,6 @@
       .legend-group {
         max-width: 180px;
         padding: 10px 12px;
-        bottom: 30px !important;
-        right: 10px !important;
       }
       .legend-title {
         font-size: 11px;
@@ -1162,6 +1173,40 @@
             <input type="text" id="hexInput" class="hex-input" placeholder="#2B7A8C" maxlength="7" style="display: none;">
             <button class="btn secondary" id="addCustomColor" style="margin-bottom: 0; flex: 1;">+ Add Custom Color</button>
           </div>
+          <div style="margin-top: 10px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 10px;">
+            <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px;">Color Ramps <span class="pro-badge-inline" onclick="showUpgradeModal()">PRO</span></label>
+            <select id="colorRampSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 100%; margin-bottom: 6px;">
+              <option value="">— Choose a ramp —</option>
+              <optgroup label="Sequential">
+                <option value="seq-teal">Teal</option>
+                <option value="seq-blue">Blue</option>
+                <option value="seq-green">Green</option>
+                <option value="seq-red">Red</option>
+                <option value="seq-orange">Orange</option>
+                <option value="seq-purple">Purple</option>
+                <option value="seq-grey">Grey</option>
+              </optgroup>
+              <optgroup label="Diverging">
+                <option value="div-red-blue">Red → Blue</option>
+                <option value="div-brown-green">Brown → Green</option>
+                <option value="div-orange-purple">Orange → Purple</option>
+              </optgroup>
+            </select>
+            <div id="rampPreview" style="display: none; margin-bottom: 6px;">
+              <div id="rampPreviewBar" style="display: flex; height: 20px; border-radius: 4px; overflow: hidden; cursor: pointer;"></div>
+              <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                <span style="font-size: 10px; opacity: 0.6;">Light</span>
+                <button id="reverseRamp" class="btn secondary" style="font-size: 9px; padding: 1px 6px; margin: 0;">↔ Reverse</button>
+                <span style="font-size: 10px; opacity: 0.6;">Dark</span>
+              </div>
+            </div>
+            <div id="rampStepControl" style="display: none; margin-bottom: 6px;">
+              <label style="font-size: 10px; display: flex; align-items: center; gap: 6px;">
+                Steps: <input type="range" id="rampSteps" min="3" max="9" value="5" style="flex: 1; accent-color: #2B7A8C;"> <span id="rampStepsLabel">5</span>
+              </label>
+            </div>
+            <button id="applyRamp" class="btn" style="display: none; font-size: 11px; padding: 5px 10px;">Apply Ramp to Palette</button>
+          </div>
         </div>
       </div>
 
@@ -1169,6 +1214,9 @@
       <div class="section" id="legendSection">
         <div class="section-title">Legend <span class="pro-badge-inline" onclick="showUpgradeModal()">PRO</span></div>
         <div class="section-content" id="legendContent">
+          <div style="margin-bottom: 8px;">
+            <input type="text" id="legendTitleInput" value="Legend" placeholder="Legend title" style="width: 100%; padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.08); border: 1px solid rgba(43,122,140,0.3); border-radius: 4px; color: inherit; outline: none;">
+          </div>
           <div id="legendEntries"></div>
           <button class="btn" id="autoPopulateLegend" style="margin-bottom: 6px;">🎨 Add Colors from Map</button>
           <button class="btn secondary" id="addLegendEntry" style="font-size: 10px;">+ Add Entry Manually</button>
@@ -1522,6 +1570,7 @@
       titleColor: '#2B7A8C',
       bgColor: '',
       scaleUnit: 'imperial',
+      legendTitle: 'Legend',
       legendPosition: 'bottom-right',
       arrowPosition: 'top-right',
       arrowColor: '#ffffff',
@@ -1952,6 +2001,106 @@
     }
 
     // ============================================================================
+    // COLOR RAMPS
+    // ============================================================================
+
+    const colorRamps = {
+      'seq-teal':   ['#e0f4f4', '#b2e4e4', '#7ccfc8', '#4bb5a9', '#2B9A8C', '#1D7A6A', '#0F5C4E'],
+      'seq-blue':   ['#e3f0fc', '#b3d4f5', '#7ab5eb', '#4a94dd', '#2070c4', '#15529e', '#0b3672'],
+      'seq-green':  ['#e8f5e9', '#b9e0b9', '#85c985', '#56b156', '#339933', '#267326', '#194d19'],
+      'seq-red':    ['#fde8e8', '#f5b8b8', '#ed8585', '#e35555', '#d63031', '#a82424', '#7a1a1a'],
+      'seq-orange': ['#fff3e0', '#ffd9a0', '#ffbc61', '#ff9f2e', '#f57c00', '#c56200', '#8c4600'],
+      'seq-purple': ['#f3e5f5', '#d1a8e0', '#af6dca', '#8e3db4', '#6c1d98', '#501574', '#350e4f'],
+      'seq-grey':   ['#f5f5f5', '#d9d9d9', '#bdbdbd', '#969696', '#737373', '#525252', '#252525'],
+      'div-red-blue':     ['#d63031', '#e87272', '#f5b0b0', '#f0f0f0', '#a8c5e2', '#5a9bc8', '#2070c4'],
+      'div-brown-green':  ['#8c510a', '#bf8040', '#dfc27d', '#f5f5dc', '#80cdc1', '#35978f', '#01665e'],
+      'div-orange-purple': ['#e66101', '#f1a44a', '#fddba0', '#f7f7f7', '#c2a5cf', '#9970ab', '#5e3c99']
+    };
+
+    let currentRampReversed = false;
+
+    function interpolateRamp(colors, steps) {
+      if (steps === colors.length) return [...colors];
+      if (steps <= 1) return [colors[Math.floor(colors.length / 2)]];
+
+      const result = [];
+      for (let i = 0; i < steps; i++) {
+        const t = i / (steps - 1);
+        const idx = t * (colors.length - 1);
+        const lo = Math.floor(idx);
+        const hi = Math.min(lo + 1, colors.length - 1);
+        const frac = idx - lo;
+
+        const c1 = hexToRgb(colors[lo]);
+        const c2 = hexToRgb(colors[hi]);
+        const r = Math.round(c1.r + (c2.r - c1.r) * frac);
+        const g = Math.round(c1.g + (c2.g - c1.g) * frac);
+        const b = Math.round(c1.b + (c2.b - c1.b) * frac);
+        result.push(`#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`);
+      }
+      return result;
+    }
+
+    function hexToRgb(hex) {
+      const h = hex.replace('#', '');
+      return {
+        r: parseInt(h.substring(0, 2), 16),
+        g: parseInt(h.substring(2, 4), 16),
+        b: parseInt(h.substring(4, 6), 16)
+      };
+    }
+
+    function getCurrentRampColors() {
+      const sel = document.getElementById('colorRampSelect').value;
+      if (!sel || !colorRamps[sel]) return null;
+      const steps = parseInt(document.getElementById('rampSteps').value);
+      let colors = interpolateRamp(colorRamps[sel], steps);
+      if (currentRampReversed) colors.reverse();
+      return colors;
+    }
+
+    function updateRampPreview() {
+      const colors = getCurrentRampColors();
+      const preview = document.getElementById('rampPreview');
+      const bar = document.getElementById('rampPreviewBar');
+      const stepControl = document.getElementById('rampStepControl');
+      const applyBtn = document.getElementById('applyRamp');
+
+      if (!colors) {
+        preview.style.display = 'none';
+        stepControl.style.display = 'none';
+        applyBtn.style.display = 'none';
+        return;
+      }
+
+      preview.style.display = '';
+      stepControl.style.display = '';
+      applyBtn.style.display = '';
+
+      bar.innerHTML = colors.map(c =>
+        `<div style="flex: 1; background: ${c};" title="${c}"></div>`
+      ).join('');
+    }
+
+    function applyRampToPalette() {
+      const colors = getCurrentRampColors();
+      if (!colors) return;
+      appState.presetColors = [...colors];
+      initializeColorPalette();
+      selectColor(colors[0]);
+
+      // Also auto-populate legend entries from the ramp
+      appState.legendEntries = colors.map((c, i) => ({
+        color: c,
+        label: ''
+      }));
+      updateLegendBuilder();
+      updateLegendDisplay();
+
+      showMessage(`Applied ${colors.length}-step ramp to palette`, 'success');
+    }
+
+    // ============================================================================
     // STATE INTERACTION
     // ============================================================================
 
@@ -2148,7 +2297,8 @@
       }
 
       legendDisplay.style.display = 'block';
-      legendDisplay.innerHTML = '<div class="legend-title">Legend</div>';
+      legendDisplay.innerHTML = '<div class="legend-title">' + (appState.legendTitle || 'Legend') + '</div>';
+      updateLegendPosition();
 
       appState.legendEntries.forEach(entry => {
         const itemEl = document.createElement('div');
@@ -2262,7 +2412,8 @@
         colors: appState.stateColors,
         legend: appState.legendEntries,
         title: appState.mapTitle,
-        subtitle: appState.mapSubtitle
+        subtitle: appState.mapSubtitle,
+        legendTitle: appState.legendTitle
       };
       return btoa(JSON.stringify(state));
     }
@@ -2294,6 +2445,10 @@
           appState.legendEntries = state.legend || [];
           appState.mapTitle = state.title || 'My US Map';
           appState.mapSubtitle = state.subtitle || '';
+          if (state.legendTitle) {
+            appState.legendTitle = state.legendTitle;
+            document.getElementById('legendTitleInput').value = state.legendTitle;
+          }
 
           document.getElementById('mapTitle').textContent = appState.mapTitle;
           document.getElementById('mapSubtitle').textContent = appState.mapSubtitle;
@@ -2856,28 +3011,31 @@
     function updateLegendPosition() {
       const legend = document.getElementById('legendDisplay');
       if (!legend) return;
-      // Reset all positioning
-      legend.style.top = '';
-      legend.style.bottom = '';
-      legend.style.left = '';
-      legend.style.right = '';
 
       switch (appState.legendPosition) {
         case 'bottom-right':
+          legend.style.top = 'auto';
           legend.style.bottom = '50px';
+          legend.style.left = 'auto';
           legend.style.right = '20px';
           break;
         case 'bottom-left':
+          legend.style.top = 'auto';
           legend.style.bottom = '50px';
           legend.style.left = '20px';
+          legend.style.right = 'auto';
           break;
         case 'top-right':
           legend.style.top = '20px';
+          legend.style.bottom = 'auto';
+          legend.style.left = 'auto';
           legend.style.right = '20px';
           break;
         case 'top-left':
           legend.style.top = '20px';
+          legend.style.bottom = 'auto';
           legend.style.left = '20px';
+          legend.style.right = 'auto';
           break;
       }
     }
@@ -3034,12 +3192,14 @@
         statesGroup.setAttribute('transform', '');
         statesGroup.innerHTML = '';
 
-        // Hide ocean, north arrow, scale bar in county mode
+        // Hide ocean, north arrow, scale bar in county mode and uncheck toggles
         document.getElementById('mapContainer').classList.remove('ocean-on');
         const northArrow = document.getElementById('northArrow');
         if (northArrow) northArrow.style.display = 'none';
+        document.getElementById('toggleNorthArrow').checked = false;
         const scaleBarEl = document.getElementById('scaleBar');
         if (scaleBarEl) scaleBarEl.style.display = 'none';
+        document.getElementById('toggleScaleBar').checked = false;
 
         const pathGenerator = d => {
           let pathData = '';
@@ -3235,6 +3395,20 @@
     // ============================================================================
 
     function attachEventListeners() {
+      // Mobile: make sidebar sections collapsible
+      if (window.innerWidth <= 900) {
+        document.querySelectorAll('.section').forEach((section, i) => {
+          // Keep Color Palette (first section) expanded, collapse the rest
+          if (i > 0) section.classList.add('collapsed');
+          const title = section.querySelector('.section-title');
+          if (title) {
+            title.addEventListener('click', () => {
+              section.classList.toggle('collapsed');
+            });
+          }
+        });
+      }
+
       // Color palette
       document.getElementById('colorPicker').addEventListener('change', (e) => {
         appState.selectedColor = e.target.value;
@@ -3257,6 +3431,31 @@
           initializeColorPalette();
           showMessage('Color added to palette', 'success');
         }
+      });
+
+      // Color ramp controls
+      document.getElementById('colorRampSelect').addEventListener('change', () => {
+        if (!gateProFeature('color ramps')) {
+          document.getElementById('colorRampSelect').value = '';
+          return;
+        }
+        currentRampReversed = false;
+        updateRampPreview();
+      });
+      document.getElementById('rampSteps').addEventListener('input', (e) => {
+        document.getElementById('rampStepsLabel').textContent = e.target.value;
+        updateRampPreview();
+      });
+      document.getElementById('reverseRamp').addEventListener('click', () => {
+        currentRampReversed = !currentRampReversed;
+        updateRampPreview();
+      });
+      document.getElementById('applyRamp').addEventListener('click', applyRampToPalette);
+
+      // Legend title
+      document.getElementById('legendTitleInput').addEventListener('input', (e) => {
+        appState.legendTitle = e.target.value;
+        updateLegendDisplay();
       });
 
       // Legend (Pro-gated)
@@ -3351,6 +3550,7 @@
 
       // North arrow toggle, position, color & style
       document.getElementById('toggleNorthArrow').addEventListener('change', (e) => {
+        if (countyMode) { e.target.checked = false; showMessage('North arrow not available in county view', 'info'); return; }
         document.getElementById('northArrow').style.display = e.target.checked ? '' : 'none';
       });
       document.getElementById('arrowPositionSelect').addEventListener('change', (e) => {
@@ -3368,6 +3568,7 @@
 
       // Scale bar toggle, position, units, color & style
       document.getElementById('toggleScaleBar').addEventListener('change', (e) => {
+        if (countyMode) { e.target.checked = false; showMessage('Scale bar not available in county view', 'info'); return; }
         document.getElementById('scaleBar').style.display = e.target.checked ? '' : 'none';
       });
       document.getElementById('scalePositionSelect').addEventListener('change', (e) => {
