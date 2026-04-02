@@ -1175,37 +1175,20 @@
           </div>
           <div style="margin-top: 10px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 10px;">
             <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px;">Color Ramps <span class="pro-badge-inline" onclick="showUpgradeModal()">PRO</span></label>
-            <select id="colorRampSelect" class="region-select" style="font-size: 11px; padding: 3px 6px; width: 100%; margin-bottom: 6px;">
-              <option value="">— Choose a ramp —</option>
-              <optgroup label="Sequential">
-                <option value="seq-teal">Teal</option>
-                <option value="seq-blue">Blue</option>
-                <option value="seq-green">Green</option>
-                <option value="seq-red">Red</option>
-                <option value="seq-orange">Orange</option>
-                <option value="seq-purple">Purple</option>
-                <option value="seq-grey">Grey</option>
-              </optgroup>
-              <optgroup label="Diverging">
-                <option value="div-red-blue">Red → Blue</option>
-                <option value="div-brown-green">Brown → Green</option>
-                <option value="div-orange-purple">Orange → Purple</option>
-              </optgroup>
-            </select>
-            <div id="rampPreview" style="display: none; margin-bottom: 6px;">
-              <div id="rampPreviewBar" style="display: flex; height: 20px; border-radius: 4px; overflow: hidden; cursor: pointer;"></div>
-              <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+            <div id="rampPicker" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;"></div>
+            <input type="hidden" id="colorRampSelect" value="">
+            <div id="rampControls" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <span style="font-size: 10px; opacity: 0.6;">Light</span>
                 <button id="reverseRamp" class="btn secondary" style="font-size: 9px; padding: 1px 6px; margin: 0;">↔ Reverse</button>
                 <span style="font-size: 10px; opacity: 0.6;">Dark</span>
               </div>
-            </div>
-            <div id="rampStepControl" style="display: none; margin-bottom: 6px;">
-              <label style="font-size: 10px; display: flex; align-items: center; gap: 6px;">
+              <label style="font-size: 10px; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
                 Steps: <input type="range" id="rampSteps" min="3" max="9" value="5" style="flex: 1; accent-color: #2B7A8C;"> <span id="rampStepsLabel">5</span>
               </label>
+              <button id="applyRamp" class="btn" style="font-size: 11px; padding: 5px 10px; margin-bottom: 4px;">Apply Ramp to Palette</button>
+              <button id="resetPalette" class="btn secondary" style="font-size: 10px; padding: 4px 8px;">Reset to Default Palette</button>
             </div>
-            <button id="applyRamp" class="btn" style="display: none; font-size: 11px; padding: 5px 10px;">Apply Ramp to Palette</button>
           </div>
         </div>
       </div>
@@ -1629,6 +1612,7 @@
       await loadUSMap();
       loadStateFromURL();
       attachEventListeners();
+      buildRampPicker();
       renderNorthArrow();
       renderScaleBar();
       updateStatsBar();
@@ -2019,11 +2003,64 @@
     };
 
     let currentRampReversed = false;
+    const defaultPresetColors = [
+      '#667eea', '#ff6b6b', '#51cf66', '#ffd93d',
+      '#6bcf7f', '#4ecdc4', '#ff8c42', '#a29bfe',
+      '#fd79a8', '#fab1a0', '#74b9ff', '#81ecec',
+      '#2d3436', '#636e72', '#b2bec3', '#dfe6e9',
+      '#d63031', '#e17055', '#00b894', '#00cec9',
+      '#0984e3', '#6c5ce7', '#fdcb6e', '#e84393'
+    ];
+
+    const rampNames = {
+      'seq-teal': 'Teal', 'seq-blue': 'Blue', 'seq-green': 'Green', 'seq-red': 'Red',
+      'seq-orange': 'Orange', 'seq-purple': 'Purple', 'seq-grey': 'Grey',
+      'div-red-blue': 'Red–Blue', 'div-brown-green': 'Brown–Green', 'div-orange-purple': 'Orange–Purple'
+    };
+
+    function buildRampPicker() {
+      const container = document.getElementById('rampPicker');
+      container.innerHTML = '';
+      const selectedRamp = document.getElementById('colorRampSelect').value;
+
+      Object.entries(colorRamps).forEach(([key, colors]) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 3px 4px; border-radius: 4px; transition: background 0.15s;';
+        if (key === selectedRamp) {
+          row.style.background = 'rgba(43, 122, 140, 0.25)';
+          row.style.outline = '1px solid rgba(43, 122, 140, 0.5)';
+        }
+        row.addEventListener('mouseenter', () => { if (key !== document.getElementById('colorRampSelect').value) row.style.background = 'rgba(255,255,255,0.06)'; });
+        row.addEventListener('mouseleave', () => { if (key !== document.getElementById('colorRampSelect').value) row.style.background = ''; });
+
+        const bar = document.createElement('div');
+        bar.style.cssText = 'display: flex; flex: 1; height: 14px; border-radius: 3px; overflow: hidden;';
+        colors.forEach(c => {
+          const seg = document.createElement('div');
+          seg.style.cssText = `flex: 1; background: ${c};`;
+          bar.appendChild(seg);
+        });
+
+        const label = document.createElement('span');
+        label.style.cssText = 'font-size: 9px; width: 52px; text-align: right; opacity: 0.6; flex-shrink: 0;';
+        label.textContent = rampNames[key] || key;
+
+        row.appendChild(bar);
+        row.appendChild(label);
+        row.addEventListener('click', () => {
+          if (!gateProFeature('color ramps')) return;
+          document.getElementById('colorRampSelect').value = key;
+          currentRampReversed = false;
+          buildRampPicker();
+          document.getElementById('rampControls').style.display = '';
+        });
+        container.appendChild(row);
+      });
+    }
 
     function interpolateRamp(colors, steps) {
       if (steps === colors.length) return [...colors];
       if (steps <= 1) return [colors[Math.floor(colors.length / 2)]];
-
       const result = [];
       for (let i = 0; i < steps; i++) {
         const t = i / (steps - 1);
@@ -2031,7 +2068,6 @@
         const lo = Math.floor(idx);
         const hi = Math.min(lo + 1, colors.length - 1);
         const frac = idx - lo;
-
         const c1 = hexToRgb(colors[lo]);
         const c2 = hexToRgb(colors[hi]);
         const r = Math.round(c1.r + (c2.r - c1.r) * frac);
@@ -2060,29 +2096,6 @@
       return colors;
     }
 
-    function updateRampPreview() {
-      const colors = getCurrentRampColors();
-      const preview = document.getElementById('rampPreview');
-      const bar = document.getElementById('rampPreviewBar');
-      const stepControl = document.getElementById('rampStepControl');
-      const applyBtn = document.getElementById('applyRamp');
-
-      if (!colors) {
-        preview.style.display = 'none';
-        stepControl.style.display = 'none';
-        applyBtn.style.display = 'none';
-        return;
-      }
-
-      preview.style.display = '';
-      stepControl.style.display = '';
-      applyBtn.style.display = '';
-
-      bar.innerHTML = colors.map(c =>
-        `<div style="flex: 1; background: ${c};" title="${c}"></div>`
-      ).join('');
-    }
-
     function applyRampToPalette() {
       const colors = getCurrentRampColors();
       if (!colors) return;
@@ -2090,7 +2103,7 @@
       initializeColorPalette();
       selectColor(colors[0]);
 
-      // Also auto-populate legend entries from the ramp
+      // Auto-populate legend entries from the ramp
       appState.legendEntries = colors.map((c, i) => ({
         color: c,
         label: ''
@@ -2099,6 +2112,17 @@
       updateLegendDisplay();
 
       showMessage(`Applied ${colors.length}-step ramp to palette`, 'success');
+    }
+
+    function resetPalette() {
+      appState.presetColors = [...defaultPresetColors];
+      document.getElementById('colorRampSelect').value = '';
+      document.getElementById('rampControls').style.display = 'none';
+      currentRampReversed = false;
+      buildRampPicker();
+      initializeColorPalette();
+      selectColor(appState.presetColors[0]);
+      showMessage('Palette reset to defaults', 'success');
     }
 
     // ============================================================================
@@ -3435,23 +3459,15 @@
       });
 
       // Color ramp controls
-      document.getElementById('colorRampSelect').addEventListener('change', () => {
-        if (!gateProFeature('color ramps')) {
-          document.getElementById('colorRampSelect').value = '';
-          return;
-        }
-        currentRampReversed = false;
-        updateRampPreview();
-      });
       document.getElementById('rampSteps').addEventListener('input', (e) => {
         document.getElementById('rampStepsLabel').textContent = e.target.value;
-        updateRampPreview();
       });
       document.getElementById('reverseRamp').addEventListener('click', () => {
         currentRampReversed = !currentRampReversed;
-        updateRampPreview();
+        buildRampPicker();
       });
       document.getElementById('applyRamp').addEventListener('click', applyRampToPalette);
+      document.getElementById('resetPalette').addEventListener('click', resetPalette);
 
       // Legend title
       document.getElementById('legendTitleInput').addEventListener('input', (e) => {
@@ -3640,7 +3656,4 @@
     }
 
     // Initialize app
-    init();
-  </script>
-</body>
-</html>
+    init()
