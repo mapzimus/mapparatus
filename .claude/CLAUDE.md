@@ -15,10 +15,10 @@ Mapparatus (formerly Cakemapper) is a client-side web app for creating colored U
 - **Tagline**: "simple maps, simple tools"
 - **Aesthetic**: Clean, professional, cartographic feel. Teal color palette throughout the app and all marketing materials. The hexagon motif can be used as a design element.
 - **Logo files**: 3 versions provided (stacked, horizontal, icon-only) — store in repo as `/assets/logo-stacked.png`, `/assets/logo-horizontal.png`, `/assets/logo-icon.png`
-- **Current live site**: https://mapzimus.github.io/cakemapper/ (to be migrated)
-- **Repo**: https://github.com/mapzimus/cakemapper (to be renamed)
+- **Current live site**: https://mapparatus.org (GitHub Pages with custom domain)
+- **Repo**: https://github.com/mapzimus/mapparatus
 - **Local path (Windows)**: `C:\Users\mhowe\cakemapper\index.html`
-- **Single file**: `index.html` (~2615 lines, all CSS/HTML/JS inline)
+- **Single file**: `index.html` (~3600 lines, all CSS/HTML/JS inline)
 
 ---
 
@@ -26,11 +26,11 @@ Mapparatus (formerly Cakemapper) is a client-side web app for creating colored U
 **Goal**: Rebrand to Mapparatus and fix all known issues so the app is rock-solid.
 
 ### Rename Checklist
-- [ ] Rename GitHub repo: cakemapper → mapparatus
-- [ ] Update GitHub Pages URL or set up custom domain
+- [x] Rename GitHub repo: cakemapper → mapparatus (done April 2026)
+- [x] Update GitHub Pages URL — custom domain mapparatus.org active
 - [x] Replace all "Cakemapper" / "cakemapper" references in index.html
 - [x] Update Pro unlock codes (now: `MAPPRO2026`, `mapparatus`)
-- [ ] Update HANDOVER.md in repo
+- [x] Update HANDOVER.md in repo
 - [x] Update .claude/CLAUDE.md in repo
 - [x] Register mapparatus.org domain
 - [x] Set up max@mapparatus.org email (via Google Workspace)
@@ -47,7 +47,7 @@ Mapparatus (formerly Cakemapper) is a client-side web app for creating colored U
 ### Polish Priorities
 - [x] **Restyle to brand colors**: All `#667eea` purple/blue accents replaced with teal (#2B7A8C primary, #3A9BB0 hover, #1D5A6A dark). Only remaining `#667eea` is in the user-facing color palette array (intentional — it's a usable paint color).
 - [x] Responsive/mobile layout (breakpoints at 900px and 600px)
-- [ ] Smooth onboarding UX (first-time user should understand the app in 10 seconds)
+- [x] Smooth onboarding UX — guided overlay on first visit with step-by-step hints
 - [ ] Performance audit (~2600-line single file may need modularization eventually)
 
 ---
@@ -351,6 +351,10 @@ const labelOffsets = {
 
 ## Commit History
 ```
+db0834d Visual ramp picker with colored strips and reset palette button
+1be6498 Add color ramps, fix legend positioning, custom legend title, county mode guards
+db0834d Visual ramp picker with colored strips and reset palette button
+1be6498 Add color ramps, fix legend positioning, custom legend title, county mode guards
 818b4b7 Rebrand to Mapparatus: tier system, state zoom, remove PR/CSV, professional polish
 7f3dded Fix WA/MA labels, remove background partition by moving ocean to CSS
 a834229 Remove basemap, fix label centering with geometric centroids

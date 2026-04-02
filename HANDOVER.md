@@ -4,9 +4,9 @@
 Mapparatus (formerly Cakemapper) is a single-file HTML web app for creating colored US state and county maps. Users pick colors, click states, build legends, and export publication-ready maps. It runs entirely client-side, currently hosted on GitHub Pages with a custom domain.
 
 - **Live site**: https://mapparatus.org (GitHub Pages with custom domain)
-- **Repo**: https://github.com/mapzimus/cakemapper (branch: `master`, to be renamed `mapparatus`)
+- **Repo**: https://github.com/mapzimus/mapparatus (branch: `master`)
 - **Local path (Windows)**: `C:\Users\mhowe\cakemapper\index.html`
-- **Single file**: `index.html` (~2825 lines, all CSS/HTML/JS inline)
+- **Single file**: `index.html` (~3600 lines, all CSS/HTML/JS inline)
 - **Domain**: mapparatus.org (registered via Squarespace/Google Domains)
 - **Email**: max@mapparatus.org (Google Workspace)
 
@@ -16,19 +16,22 @@ The app is fully functional and rebranded as Mapparatus with tiered subscription
 - 50 US states colorable (DC visible but non-colorable by design)
 - Puerto Rico removed entirely
 - 24-color palette with custom color support (12 colors on Free tier)
-- Legend builder, quick fill by region, undo, dark/light themes
+- 10 color ramps (7 sequential + 3 diverging) with visual picker, adjustable steps, and reverse (Pro)
+- Reset to Default Palette button to undo ramp application
+- Legend builder with custom editable title, 4-position placement (all corners), quick fill by region, undo, dark/light themes
 - Export to PNG and SVG (no GeoJSON/CSV export)
 - Pro unlock codes: `MAPPRO2026` or `mapparatus`
 - County-level view (Pro feature)
 - State zoom for individual state county maps (Pro feature)
-- Editable title/subtitle, north arrow, scale bar with position controls
+- Editable title/subtitle, north arrow, scale bar with position controls (disabled in county/state zoom modes) (disabled in county/state zoom modes)
 - Ocean background toggle (CSS-based)
 - Inline SVG logo watermark on map (always on for Free; Pro users can hide)
 - Mobile-friendly export (detects mobile UA, opens image for long-press save)
-- Responsive layout (breakpoints at 900px and 600px)
+- Responsive layout (breakpoints at 900px and 600px) with collapsible sidebar sections on mobile with collapsible sidebar sections on mobile
 - Brand colors: teal (#2B7A8C primary, #3A9BB0 hover, #1D5A6A dark)
 - Small NE state labels use leader lines (DE, CT, RI, MD)
-- Shareable URL encoding, save/load config files (Pro)
+- Shareable URL encoding (includes legend title), save/load config files (Pro)
+- Guided onboarding overlay for first-time users
 
 ## Architecture Overview
 Everything lives in one HTML file. No build tools, no framework. External dependencies loaded via CDN: `topojson-client@3` for parsing TopoJSON, `html2canvas` for PNG export. Map data comes from `us-atlas@3` (pre-projected Albers USA).
@@ -108,6 +111,10 @@ The SVG uses a viewBox of `-20 -30 1010 710`. State paths are rendered inside a 
 
 ## Commit History
 ```
+db0834d Visual ramp picker with colored strips and reset palette button
+1be6498 Add color ramps, fix legend positioning, custom legend title, county mode guards
+db0834d Visual ramp picker with colored strips and reset palette button
+1be6498 Add color ramps, fix legend positioning, custom legend title, county mode guards
 818b4b7 Rebrand to Mapparatus: tier system, state zoom, remove PR/CSV, professional polish
 7f3dded Fix WA/MA labels, remove background partition by moving ocean to CSS
 a834229 Remove basemap, fix label centering with geometric centroids
@@ -135,11 +142,11 @@ bd45e26 Initial release of Cakemapper
 - **Subscription infrastructure**: Needs Vercel + Supabase/Clerk auth + Stripe (Phase 2)
 - **Custom domain**: mapparatus.org configured via Squarespace DNS → GitHub Pages
 - **Social media pipeline**: Instagram (@mappratus), TikTok, X accounts created. OpenClaw automation planned (Phase 4)
-- **Repo rename**: GitHub repo still named "cakemapper", needs rename to "mapparatus"
+- **Repo renamed**: GitHub repo renamed to "mapparatus" (done April 2026)
 
 ## Roadmap
 
-1. **Phase 1** (current): Rebrand + polish — mostly complete, remaining: onboarding UX, repo rename
+1. **Phase 1** (complete): Rebrand + polish — done. Repo renamed, onboarding added, color ramps, legend fixes
 2. **Phase 2**: Subscription & auth — Vercel hosting, Supabase auth, Stripe payments
 3. **Phase 3**: Hosting & domain — Vercel deployment, SSL, DNS finalization
 4. **Phase 4**: Social media content engine — OpenClaw automation, idea database, headless Puppeteer export
@@ -147,7 +154,7 @@ bd45e26 Initial release of Cakemapper
 
 ## How to Continue Development
 
-1. Clone/pull the repo: `git clone https://github.com/mapzimus/cakemapper.git`
+1. Clone/pull the repo: `git clone https://github.com/mapzimus/mapparatus.git`
 2. Edit `index.html` directly — it's the only file that matters
 3. Test locally by opening `index.html` in a browser (use `python -m http.server` for CORS)
 4. Commit and push to master for GitHub Pages deployment
@@ -155,8 +162,8 @@ bd45e26 Initial release of Cakemapper
 
 ## File Structure
 ```
-cakemapper/
-  index.html              # The entire app (~2825 lines)
+mapparatus/
+  index.html              # The entire app (~3600 lines)
   assets/
     logo-horizontal.svg   # Horizontal logo (icon + wordmark)
   .claude/
