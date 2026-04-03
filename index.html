@@ -2920,18 +2920,17 @@
 
     function updateExportCounter() {
       const counter = document.getElementById('exportCounter');
-      const countNum = document.getElementById('exportCountNum');
+      if (!counter) return;
       if (isPro()) {
         counter.style.display = 'none';
         return;
       }
       counter.style.display = '';
       const remaining = Math.max(0, 3 - getExportCount().count);
-      countNum.textContent = remaining;
-      counter.querySelector('#exportCountNum').parentNode.innerHTML =
+      counter.innerHTML =
         remaining === 0
-          ? '<strong style="color: #ff6b6b;">0</strong> free exports remaining — <a href="#" onclick="showUpgradeModal(); return false;" style="color: #4ecdc4; text-decoration: underline;">upgrade to Pro</a>'
-          : `<strong>${remaining}</strong> free export${remaining !== 1 ? 's' : ''} remaining this month`;
+          ? '<strong id="exportCountNum" style="color: #ff6b6b;">0</strong> free exports remaining — <a href="#" onclick="showUpgradeModal(); return false;" style="color: #4ecdc4; text-decoration: underline;">upgrade to Pro</a>'
+          : `<strong id="exportCountNum">${remaining}</strong> free export${remaining !== 1 ? 's' : ''} remaining this month`;
       counter.classList.toggle('low', remaining <= 1);
     }
 
