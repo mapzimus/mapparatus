@@ -1204,6 +1204,7 @@
           </div>
           <div style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
             <button class="btn secondary" id="colorblindBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;" title="Switch to colorblind-safe palette">👁 Colorblind Safe</button>
+            <button class="btn secondary" id="resetPaletteBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;" title="Reset to default 24-color palette">↺ Default</button>
             <button class="btn secondary" id="morePalettesBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;">▼ More Palettes</button>
           </div>
           <div id="morePalettesPanel" style="display: none; margin-top: 8px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 8px;">
@@ -3800,8 +3801,9 @@
       document.getElementById('applyRamp').addEventListener('click', applyRampToPalette);
       document.getElementById('resetPalette').addEventListener('click', resetPalette);
 
-      // Colorblind & more palettes
+      // Colorblind, reset & more palettes
       document.getElementById('colorblindBtn').addEventListener('click', applyColorblindPalette);
+      document.getElementById('resetPaletteBtn').addEventListener('click', resetPalette);
       document.getElementById('morePalettesBtn').addEventListener('click', () => {
         const panel = document.getElementById('morePalettesPanel');
         const btn = document.getElementById('morePalettesBtn');
