@@ -1207,7 +1207,7 @@
             <button class="btn secondary" id="resetPaletteBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;" title="Reset to default 24-color palette">↺ Default</button>
             <button class="btn secondary" id="morePalettesBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;">▼ More Palettes</button>
           </div>
-          <div id="morePalettesPanel" style="display: none; margin-top: 8px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 8px;">
+          <div id="morePalettesPanel" style="display: none; margin-top: 8px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 8px; max-height: 300px; overflow-y: auto;">
             <div id="paletteOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
           </div>
           <div style="margin-top: 10px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 10px;">
@@ -2054,54 +2054,105 @@
     // ============================================================================
 
     const extraPalettes = {
-      'Earth Tones': ['#8B4513', '#A0522D', '#CD853F', '#DEB887', '#D2B48C', '#BC8F8F', '#F4A460', '#DAA520', '#B8860B', '#556B2F', '#6B8E23', '#808000'],
-      'Pastels': ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E8BAFF', '#FFB3DE', '#B3FFE0', '#B3D4FF', '#FFE0B3', '#D4B3FF', '#B3FFF0'],
-      'Bold & Vivid': ['#FF0000', '#FF8C00', '#FFD700', '#32CD32', '#0000FF', '#8B00FF', '#FF1493', '#00CED1', '#FF4500', '#1E90FF', '#DC143C', '#228B22'],
-      'Muted': ['#7B8D6E', '#9E8E6E', '#8E7B6E', '#6E7B8D', '#8D6E7B', '#6E8D7B', '#A39171', '#7191A3', '#917191', '#91A371', '#7191A3', '#A37191'],
-      'Warm Sunset': ['#FF6B35', '#F7C59F', '#EFEFD0', '#004E89', '#1A659E', '#FF4E50', '#FC913A', '#F9D423', '#EDE574', '#E1F5C4', '#FF6B6B', '#C44D58'],
-      'Cool Ocean': ['#003B46', '#07575B', '#66A5AD', '#C4DFE6', '#0D3B66', '#5AB9EA', '#155263', '#1B98E0', '#247BA0', '#70C1B3', '#B2DBBF', '#F3FFBD'],
-      'Neon': ['#FF6EC7', '#39FF14', '#FF3F00', '#00FFFF', '#FF00FF', '#FFFF00', '#FF1493', '#00FF7F', '#FF4500', '#7B68EE', '#00FA9A', '#FF69B4']
+      // --- Nature & Landscape ---
+      'Earth Tones': ['#5C4033', '#8B5E3C', '#A67B5B', '#C4A882', '#D2B48C', '#8F9779', '#6B7F3B', '#4A5D23', '#3B3C36', '#9E7E6B', '#C9B99A', '#E8DCC8'],
+      'Forest': ['#1B4332', '#2D6A4F', '#40916C', '#52B788', '#74C69D', '#95D5B2', '#B7E4C7', '#D8F3DC', '#344E41', '#588157', '#A3B18A', '#DAD7CD'],
+      'Desert': ['#EDC9AF', '#D2A679', '#C58B5B', '#A0522D', '#8B4513', '#D4A76A', '#F5DEB3', '#E8C39E', '#C8A96E', '#BF8B2E', '#AA6B39', '#F0E0C0'],
+      'Ocean': ['#03045E', '#023E8A', '#0077B6', '#0096C7', '#00B4D8', '#48CAE4', '#90E0EF', '#ADE8F4', '#CAF0F8', '#1B4965', '#5FA8D3', '#BEE9E8'],
+      'Autumn Leaves': ['#8B0000', '#A52A2A', '#CD5C5C', '#D2691E', '#DAA520', '#B8860B', '#FF8C00', '#FF6347', '#CC5500', '#8B6914', '#CD853F', '#F4A460'],
+
+      // --- Pastels & Soft ---
+      'Pastel Rainbow': ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E8BAFF', '#FFB3DE', '#B3FFE0', '#B3D4FF', '#FFE0B3', '#D4B3FF', '#B3FFF0'],
+      'Pastel Spring': ['#FFC1CC', '#FFD4E5', '#FFEACC', '#FFFFD1', '#D4F0C4', '#C4E3F3', '#D8C4F0', '#F0C4D8', '#E5F9DB', '#F9E5DB', '#DBE5F9', '#F9DBF5'],
+      'Cotton Candy': ['#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7', '#C7CEEA', '#F2C6DE', '#E0BBE4', '#957DAD', '#D291BC', '#FEC8D8', '#FFDFD3'],
+      'Ice Cream': ['#F8B4C8', '#F4978E', '#F8AD9D', '#FBC4AB', '#FFDAB9', '#E5C1CD', '#B8E0D2', '#D6EADF', '#95B8D1', '#EAC4D5', '#D4A5A5', '#F9E2AE'],
+
+      // --- Bold & Vivid ---
+      'Bold Primary': ['#FF0000', '#FF8C00', '#FFD700', '#32CD32', '#0000FF', '#8B00FF', '#FF1493', '#00CED1', '#FF4500', '#1E90FF', '#DC143C', '#228B22'],
+      'Neon Glow': ['#FF6EC7', '#39FF14', '#FF3F00', '#00FFFF', '#FF00FF', '#FFFF00', '#FF1493', '#00FF7F', '#FF4500', '#7B68EE', '#00FA9A', '#FF69B4'],
+      'Pop Art': ['#FF355E', '#FF6037', '#FFCC33', '#66FF66', '#50BFE6', '#FF6EFF', '#EE34D2', '#FF9933', '#FFFF66', '#66CCCC', '#CF71AF', '#FF9966'],
+
+      // --- Muted & Sophisticated ---
+      'Muted Clay': ['#7B8D6E', '#9E8E6E', '#8E7B6E', '#6E7B8D', '#8D6E7B', '#6E8D7B', '#A39171', '#7191A3', '#917191', '#91A371', '#B5A68E', '#8EA3B5'],
+      'Vintage': ['#D4A373', '#CCD5AE', '#E9EDC9', '#FEFAE0', '#FAEDCD', '#D4C5A9', '#94866E', '#7F6B54', '#5C5346', '#A98467', '#C2A77D', '#E6D5B8'],
+      'Nordic': ['#2E3440', '#3B4252', '#434C5E', '#4C566A', '#D8DEE9', '#E5E9F0', '#ECEFF4', '#8FBCBB', '#88C0D0', '#81A1C1', '#5E81AC', '#B48EAD'],
+
+      // --- Fun & Themed ---
+      'Pride Rainbow': ['#E40303', '#FF8C00', '#FFED00', '#008026', '#004DFF', '#750787', '#FFFFFF', '#FFAFC8', '#74D7EE', '#613915', '#000000', '#FFF430'],
+      'Trans Pride': ['#5BCEFA', '#F5A9B8', '#FFFFFF', '#F5A9B8', '#5BCEFA', '#55CDFC', '#F7A8B8', '#FAFAFA', '#F7A8B8', '#55CDFC', '#A9D5F2', '#F2C5D0'],
+      'Bi Pride': ['#D60270', '#D60270', '#9B4F96', '#0038A8', '#0038A8', '#E8548F', '#C574B5', '#4A7DC6', '#F0A0C0', '#B88BC0', '#7098D0', '#F5C5D5'],
+      'USA Patriotic': ['#B22234', '#FFFFFF', '#3C3B6E', '#B22234', '#FFFFFF', '#3C3B6E', '#D44A4A', '#8B9DC3', '#E8E8E8', '#7B1818', '#2B2B5E', '#C4C4C4'],
+      'Retro 70s': ['#D4A03C', '#E2724F', '#D45B3F', '#C84B31', '#5C8A4D', '#3A6B35', '#E8C547', '#F5A623', '#8B6F47', '#704214', '#A0522D', '#2E4600'],
+      'Candy Shop': ['#FF69B4', '#FF1493', '#FF6EB4', '#FFB6C1', '#87CEEB', '#00CED1', '#FF7F50', '#FFD700', '#98FB98', '#DDA0DD', '#F0E68C', '#FFA07A'],
+      'Tropical': ['#FF6F61', '#FFB347', '#FDFD96', '#77DD77', '#03C9A9', '#6EB5FF', '#FF6EC7', '#C39BD3', '#FF9A76', '#88D8B0', '#FCEABB', '#AED9E0'],
+      'Sunset Gradient': ['#FF512F', '#F09819', '#FC4A1A', '#F7B733', '#FF5E62', '#FF9966', '#FF5F6D', '#FFC371', '#E44D26', '#F16529', '#FFB75E', '#ED8F03'],
+      'Midnight': ['#0F0C29', '#302B63', '#24243E', '#4A407A', '#6C63AC', '#7B6CB5', '#C9B1FF', '#E8DDFF', '#1A1A2E', '#16213E', '#0F3460', '#533483'],
+      'Coffee': ['#2C1810', '#4A2C1A', '#6F4E37', '#8B6F4E', '#A0826D', '#C4A882', '#D2B48C', '#DEB887', '#F5DEB3', '#FAEBD7', '#FFF8DC', '#3C2415'],
+      'Cherry Blossom': ['#FFB7C5', '#FF8FA3', '#E75480', '#DE3163', '#FFD1DC', '#FFECF1', '#FFF0F3', '#CC5B7A', '#F4889A', '#FFCCD5', '#F0A0B0', '#E8D5DE']
     };
 
     const colorblindPalettes = {
       'Colorblind Safe (8)': ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'],
       'Colorblind Safe (12)': ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#332288', '#88CCEE', '#44AA99', '#DDCC77'],
-      'CB Diverging (Red-Blue)': ['#CA0020', '#F4A582', '#F7F7F7', '#92C5DE', '#0571B0', '#D7191C', '#FDAE61', '#ABD9E9', '#2C7BB6', '#FEE090', '#E0F3F8', '#FFFFBF'],
-      'CB Sequential (Blues)': ['#F7FBFF', '#DEEBF7', '#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6', '#2171B5', '#08519C', '#08306B', '#3182BD', '#6BAED6', '#9ECAE1']
+      'CB Diverging': ['#CA0020', '#F4A582', '#F7F7F7', '#92C5DE', '#0571B0', '#D7191C', '#FDAE61', '#ABD9E9', '#2C7BB6', '#FEE090', '#E0F3F8', '#FFFFBF'],
+      'CB Sequential': ['#F7FBFF', '#DEEBF7', '#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6', '#2171B5', '#08519C', '#08306B', '#3182BD', '#6BAED6', '#9ECAE1']
     };
 
     function buildPaletteOptions() {
       const container = document.getElementById('paletteOptions');
       container.innerHTML = '';
 
+      // Group extra palettes by category using name prefixes
+      const categories = [
+        { title: 'Nature & Landscape', keys: ['Earth Tones', 'Forest', 'Desert', 'Ocean', 'Autumn Leaves'] },
+        { title: 'Pastels & Soft', keys: ['Pastel Rainbow', 'Pastel Spring', 'Cotton Candy', 'Ice Cream'] },
+        { title: 'Bold & Vivid', keys: ['Bold Primary', 'Neon Glow', 'Pop Art'] },
+        { title: 'Muted & Sophisticated', keys: ['Muted Clay', 'Vintage', 'Nordic'] },
+        { title: 'Fun & Themed', keys: ['Pride Rainbow', 'Trans Pride', 'Bi Pride', 'USA Patriotic', 'Retro 70s', 'Candy Shop', 'Tropical', 'Sunset Gradient', 'Midnight', 'Coffee', 'Cherry Blossom'] },
+        { title: 'Colorblind Accessible', keys: Object.keys(colorblindPalettes) }
+      ];
+
       const allPalettes = { ...extraPalettes, ...colorblindPalettes };
-      Object.entries(allPalettes).forEach(([name, colors]) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s;';
-        row.addEventListener('mouseenter', () => row.style.background = 'rgba(43,122,140,0.15)');
-        row.addEventListener('mouseleave', () => row.style.background = '');
 
-        const label = document.createElement('div');
-        label.style.cssText = 'font-size: 10px; font-weight: 600; margin-bottom: 3px; color: #8a9bb0;';
-        label.textContent = name;
+      categories.forEach(cat => {
+        const header = document.createElement('div');
+        header.style.cssText = 'font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #2B7A8C; margin: 8px 0 4px 0; padding-bottom: 2px; border-bottom: 1px solid rgba(43,122,140,0.2);';
+        header.textContent = cat.title;
+        container.appendChild(header);
 
-        const preview = document.createElement('div');
-        preview.style.cssText = 'display: flex; gap: 2px; height: 14px;';
-        colors.forEach(c => {
-          const chip = document.createElement('div');
-          chip.style.cssText = `flex: 1; background: ${c}; border-radius: 2px; min-width: 8px;`;
-          preview.appendChild(chip);
+        cat.keys.forEach(name => {
+          const colors = allPalettes[name];
+          if (!colors) return;
+
+          const row = document.createElement('div');
+          row.style.cssText = 'cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s;';
+          row.addEventListener('mouseenter', () => row.style.background = 'rgba(43,122,140,0.15)');
+          row.addEventListener('mouseleave', () => row.style.background = '');
+
+          const label = document.createElement('div');
+          label.style.cssText = 'font-size: 10px; font-weight: 600; margin-bottom: 3px; color: #8a9bb0;';
+          label.textContent = name;
+
+          const preview = document.createElement('div');
+          preview.style.cssText = 'display: flex; gap: 1px; height: 14px;';
+          // Show unique colors only (some themed palettes repeat)
+          const uniqueColors = [...new Set(colors)];
+          uniqueColors.forEach(c => {
+            const chip = document.createElement('div');
+            chip.style.cssText = `flex: 1; background: ${c}; border-radius: 2px; min-width: 6px;`;
+            preview.appendChild(chip);
+          });
+
+          row.appendChild(label);
+          row.appendChild(preview);
+          row.addEventListener('click', () => {
+            appState.presetColors = [...colors];
+            initializeColorPalette();
+            selectColor(colors[0]);
+            showMessage(`Loaded "${name}" palette`, 'success');
+          });
+          container.appendChild(row);
         });
-
-        row.appendChild(label);
-        row.appendChild(preview);
-        row.addEventListener('click', () => {
-          appState.presetColors = [...colors];
-          initializeColorPalette();
-          selectColor(colors[0]);
-          showMessage(`Loaded "${name}" palette`, 'success');
-        });
-        container.appendChild(row);
       });
     }
 
