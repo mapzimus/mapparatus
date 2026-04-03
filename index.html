@@ -3049,6 +3049,9 @@
 
       showMessage('Exporting PNG...', 'info');
 
+      // Track whether this is the clean first export (no watermark)
+      const cleanExport = perm.anonymous || isPro();
+
       if (!isPro()) {
         await recordExport();
         if (perm.remaining !== undefined && perm.remaining !== Infinity) {
@@ -3097,7 +3100,7 @@
       }).then(canvas => {
         const ctx = canvas.getContext('2d');
         ctx.save();
-        if (!isPro()) {
+        if (!cleanExport) {
           const scaleFactor = 3;
           ctx.font = `${11 * scaleFactor}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
           ctx.fillStyle = appState.darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
@@ -3207,6 +3210,8 @@
 
       showMessage('Exporting SVG...', 'info');
 
+      const cleanExport = perm.anonymous || isPro();
+
       if (!isPro()) {
         await recordExport();
         if (perm.remaining !== undefined && perm.remaining !== Infinity) {
@@ -3216,7 +3221,7 @@
 
       const svg = document.getElementById('mapSVG');
       const clone = svg.cloneNode(true);
-      // Remove watermark from export clone
+      // Remove diagonal watermark from export clone
       const cloneWatermark = clone.querySelector('#freeWatermark');
       if (cloneWatermark) cloneWatermark.remove();
       clone.setAttribute('width', '1200');
@@ -3241,7 +3246,7 @@
         l.style.fontFamily = 'sans-serif';
       });
 
-      if (!isPro()) {
+      if (!cleanExport) {
         const srcText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         srcText.setAttribute('x', '970');
         srcText.setAttribute('y', '685');
