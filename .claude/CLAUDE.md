@@ -125,8 +125,29 @@ Mapparatus (formerly Cakemapper) is a client-side web app for creating colored U
 - [x] Auth UI in upgrade modal (sign up/in, pricing buttons, sign out)
 - [x] Supabase client init in `index.html` via CDN
 - [x] All 7 env vars set in Vercel dashboard
-- [ ] **END-TO-END TEST NEEDED**: Sign up → confirm email → sign in → checkout → Pro unlock
-- [ ] **Verify Supabase anon key format**: Should be a JWT starting with `eyJ...`, not `sb_publishable_...`
+- [x] **END-TO-END TEST PASSED** (April 2026): Sign up → confirm email → sign in → Stripe checkout (test mode) → Pro unlock. All working.
+- [x] **Supabase anon key format verified**: `sb_publishable_...` is the NEW Supabase key format (replaces old JWT `eyJ...` keys). Works correctly with supabase-js client.
+- [x] **Supabase Site URL fixed**: Changed from `localhost:3000` to `https://mapparatus.org` in Supabase dashboard (Auth → URL Configuration).
+- [x] **updateExportCounter crash fixed**: Null guard added, self-destructive innerHTML pattern replaced (commit `05662a2`).
+
+### Known Issues — Pre-Launch
+These were identified during E2E testing (April 2026) and should be fixed before accepting real payments:
+
+1. **Upgrade modal $5/month button event propagation** — Clicking the pricing buttons in the upgrade modal sometimes closes the modal instead of triggering `startStripeCheckout()`. The underlying function works (confirmed via JS console). Likely a click event on the modal overlay intercepting before the button handler fires. Needs event propagation fix (e.g., `stopPropagation()` on button click or restructure modal close logic).
+
+2. **Webhook silent failure** — `/api/stripe/webhook.js` returns HTTP 200 even when the Supabase database upsert fails. Stripe thinks the event was processed successfully and won't retry. Fix: return 500 on DB errors so Stripe retries the webhook.
+
+3. **Checkout return race condition** — After Stripe redirects back to `?checkout=success`, subscription status is checked at hardcoded 2s and 5s delays. If the webhook takes longer, user won't see Pro status. Fix: poll with exponential backoff or use Supabase realtime subscription.
+
+4. **Export counter is client-side only** — Free tier 3/month PNG limit tracked in `localStorage`. Users can clear storage or modify it to bypass. Fix: track server-side in Supabase tied to user ID or IP.
+
+5. **Hardcoded promo codes bypass payment** — `MAPPRO2026` and `mapparatus` unlock Pro client-side without any payment. Fine for testing, but must be removed or moved to server-side validation before real launch.
+
+6. **isPro() is purely client-side** — `appState.proUnlocked` can be set from browser console. No server verification on feature use. Low priority since main value is exports (which could be server-gated later).
+
+7. **Missing webhook event handlers** — Only handles `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`. Missing: `invoice.payment_failed` (failed payment retry), `charge.refunded` (refund handling).
+
+8. **CORS hardcoded** — API routes have CORS set to `https://mapparatus.org` only. Won't work from localhost for local dev. Fix: use env-based CORS or allow multiple origins.
 
 ---
 

@@ -43,10 +43,20 @@ The app is fully functional and rebranded as Mapparatus:
 - **Auth UI**: Sign up/in/out in upgrade modal, Supabase client via CDN
 - **7 env vars**: All set in Vercel dashboard
 
-### What Needs Testing / Fixing
-1. **END-TO-END AUTH TEST**: Sign up → confirm email → sign in → Stripe checkout → Pro unlock. This has NOT been tested yet.
-2. **Supabase anon key verification**: The key in `index.html` (~line 2537) is `sb_publishable_wRYolYcDWeiUzobTmaCnrQ__J0quzOq`. Standard Supabase anon keys are long JWTs starting with `eyJ...`. Check Supabase dashboard → Settings → API → `anon public` key.
-3. **CORS**: API routes have CORS hardcoded to `https://mapparatus.org`. Won't work from localhost.
+### E2E Test Results (April 2026)
+All core flows tested and passing:
+1. **Sign up** → Supabase email/password ✓
+2. **Email confirmation** → Redirects to mapparatus.org ✓ (Site URL fixed from localhost:3000)
+3. **Sign in** → Session persists, `appState.currentUser` set ✓ (updateExportCounter crash fixed)
+4. **Stripe checkout** → Redirects to Stripe (test mode, `cs_test_` sessions) ✓
+5. **Pro unlock** → Webhook fires, subscription stored in Supabase, Pro gates update ✓
+
+### Known Issues (see CLAUDE.md for full list)
+- Upgrade modal button event propagation (modal closes instead of triggering checkout)
+- Webhook returns 200 on DB failure (should return 500)
+- Hardcoded promo codes bypass payment (remove before real launch)
+- Export counter is localStorage-only (bypassable)
+- CORS hardcoded to `https://mapparatus.org` (no localhost dev support)
 
 ## Architecture Overview
 
