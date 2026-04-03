@@ -219,6 +219,34 @@
       height: 24px;
       border-radius: 3px;
       flex-shrink: 0;
+      position: relative;
+    }
+
+    .legend-color.selected-paint {
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2B7A8C;
+    }
+
+    .legend-color-edit {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 14px;
+      height: 14px;
+      background: #2B7A8C;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: white;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+      line-height: 1;
+    }
+
+    .legend-entry:hover .legend-color-edit {
+      opacity: 1;
     }
 
     .legend-inputs {
@@ -1174,6 +1202,13 @@
             <input type="text" id="hexInput" class="hex-input" placeholder="#2B7A8C" maxlength="7" style="display: none;">
             <button class="btn secondary" id="addCustomColor" style="margin-bottom: 0; flex: 1;">+ Add Custom Color</button>
           </div>
+          <div style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn secondary" id="colorblindBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;" title="Switch to colorblind-safe palette">👁 Colorblind Safe</button>
+            <button class="btn secondary" id="morePalettesBtn" style="font-size: 10px; padding: 3px 8px; margin: 0;">▼ More Palettes</button>
+          </div>
+          <div id="morePalettesPanel" style="display: none; margin-top: 8px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 8px;">
+            <div id="paletteOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
+          </div>
           <div style="margin-top: 10px; border-top: 1px solid rgba(43,122,140,0.2); padding-top: 10px;">
             <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px;">Color Ramps <span class="pro-badge-inline" onclick="showUpgradeModal()">PRO</span></label>
             <div id="rampPicker" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;"></div>
@@ -2014,6 +2049,70 @@
     }
 
     // ============================================================================
+    // EXTRA PALETTES & COLORBLIND MODE
+    // ============================================================================
+
+    const extraPalettes = {
+      'Earth Tones': ['#8B4513', '#A0522D', '#CD853F', '#DEB887', '#D2B48C', '#BC8F8F', '#F4A460', '#DAA520', '#B8860B', '#556B2F', '#6B8E23', '#808000'],
+      'Pastels': ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E8BAFF', '#FFB3DE', '#B3FFE0', '#B3D4FF', '#FFE0B3', '#D4B3FF', '#B3FFF0'],
+      'Bold & Vivid': ['#FF0000', '#FF8C00', '#FFD700', '#32CD32', '#0000FF', '#8B00FF', '#FF1493', '#00CED1', '#FF4500', '#1E90FF', '#DC143C', '#228B22'],
+      'Muted': ['#7B8D6E', '#9E8E6E', '#8E7B6E', '#6E7B8D', '#8D6E7B', '#6E8D7B', '#A39171', '#7191A3', '#917191', '#91A371', '#7191A3', '#A37191'],
+      'Warm Sunset': ['#FF6B35', '#F7C59F', '#EFEFD0', '#004E89', '#1A659E', '#FF4E50', '#FC913A', '#F9D423', '#EDE574', '#E1F5C4', '#FF6B6B', '#C44D58'],
+      'Cool Ocean': ['#003B46', '#07575B', '#66A5AD', '#C4DFE6', '#0D3B66', '#5AB9EA', '#155263', '#1B98E0', '#247BA0', '#70C1B3', '#B2DBBF', '#F3FFBD'],
+      'Neon': ['#FF6EC7', '#39FF14', '#FF3F00', '#00FFFF', '#FF00FF', '#FFFF00', '#FF1493', '#00FF7F', '#FF4500', '#7B68EE', '#00FA9A', '#FF69B4']
+    };
+
+    const colorblindPalettes = {
+      'Colorblind Safe (8)': ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'],
+      'Colorblind Safe (12)': ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#332288', '#88CCEE', '#44AA99', '#DDCC77'],
+      'CB Diverging (Red-Blue)': ['#CA0020', '#F4A582', '#F7F7F7', '#92C5DE', '#0571B0', '#D7191C', '#FDAE61', '#ABD9E9', '#2C7BB6', '#FEE090', '#E0F3F8', '#FFFFBF'],
+      'CB Sequential (Blues)': ['#F7FBFF', '#DEEBF7', '#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6', '#2171B5', '#08519C', '#08306B', '#3182BD', '#6BAED6', '#9ECAE1']
+    };
+
+    function buildPaletteOptions() {
+      const container = document.getElementById('paletteOptions');
+      container.innerHTML = '';
+
+      const allPalettes = { ...extraPalettes, ...colorblindPalettes };
+      Object.entries(allPalettes).forEach(([name, colors]) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s;';
+        row.addEventListener('mouseenter', () => row.style.background = 'rgba(43,122,140,0.15)');
+        row.addEventListener('mouseleave', () => row.style.background = '');
+
+        const label = document.createElement('div');
+        label.style.cssText = 'font-size: 10px; font-weight: 600; margin-bottom: 3px; color: #8a9bb0;';
+        label.textContent = name;
+
+        const preview = document.createElement('div');
+        preview.style.cssText = 'display: flex; gap: 2px; height: 14px;';
+        colors.forEach(c => {
+          const chip = document.createElement('div');
+          chip.style.cssText = `flex: 1; background: ${c}; border-radius: 2px; min-width: 8px;`;
+          preview.appendChild(chip);
+        });
+
+        row.appendChild(label);
+        row.appendChild(preview);
+        row.addEventListener('click', () => {
+          appState.presetColors = [...colors];
+          initializeColorPalette();
+          selectColor(colors[0]);
+          showMessage(`Loaded "${name}" palette`, 'success');
+        });
+        container.appendChild(row);
+      });
+    }
+
+    function applyColorblindPalette() {
+      const cbColors = colorblindPalettes['Colorblind Safe (8)'];
+      appState.presetColors = [...cbColors];
+      initializeColorPalette();
+      selectColor(cbColors[0]);
+      showMessage('Colorblind-safe palette applied', 'success');
+    }
+
+    // ============================================================================
     // COLOR RAMPS
     // ============================================================================
 
@@ -2306,7 +2405,10 @@
         colorEl.className = 'legend-color';
         colorEl.style.backgroundColor = entry.color;
         colorEl.style.cursor = 'pointer';
-        colorEl.title = 'Click to change color';
+        colorEl.title = 'Click to paint with this color';
+        if (entry.color.toLowerCase() === appState.selectedColor.toLowerCase()) {
+          colorEl.classList.add('selected-paint');
+        }
         // Hidden color picker for this entry
         const entryColorPicker = document.createElement('input');
         entryColorPicker.type = 'color';
@@ -2316,7 +2418,20 @@
           updateLegendEntry(index, 'color', e.target.value);
           colorEl.style.backgroundColor = e.target.value;
         });
-        colorEl.addEventListener('click', () => entryColorPicker.click());
+        // Click to select as painting color
+        colorEl.addEventListener('click', () => {
+          selectColor(entry.color);
+          // Update selected-paint indicators
+          container.querySelectorAll('.legend-color').forEach(el => el.classList.remove('selected-paint'));
+          colorEl.classList.add('selected-paint');
+        });
+        // Small edit button to change the legend entry color
+        const editBtn = document.createElement('div');
+        editBtn.className = 'legend-color-edit';
+        editBtn.textContent = '✎';
+        editBtn.title = 'Change this color';
+        editBtn.addEventListener('click', (e) => { e.stopPropagation(); entryColorPicker.click(); });
+        colorEl.appendChild(editBtn);
 
         const inputsEl = document.createElement('div');
         inputsEl.className = 'legend-inputs';
@@ -3684,6 +3799,21 @@
       });
       document.getElementById('applyRamp').addEventListener('click', applyRampToPalette);
       document.getElementById('resetPalette').addEventListener('click', resetPalette);
+
+      // Colorblind & more palettes
+      document.getElementById('colorblindBtn').addEventListener('click', applyColorblindPalette);
+      document.getElementById('morePalettesBtn').addEventListener('click', () => {
+        const panel = document.getElementById('morePalettesPanel');
+        const btn = document.getElementById('morePalettesBtn');
+        if (panel.style.display === 'none') {
+          panel.style.display = '';
+          btn.textContent = '▲ Hide Palettes';
+          buildPaletteOptions();
+        } else {
+          panel.style.display = 'none';
+          btn.textContent = '▼ More Palettes';
+        }
+      });
 
       // Legend title
       document.getElementById('legendTitleInput').addEventListener('input', (e) => {
