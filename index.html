@@ -1385,6 +1385,7 @@
           <button class="btn secondary" id="exportSVGBtn">🖼 Save for Print (SVG)
             <span class="pro-badge">PRO</span>
           </button>
+          <button class="btn secondary" id="copyImageBtn" style="font-size: 13px; padding: 10px 12px;">📋 Copy Image to Clipboard</button>
           <div style="font-size: 10px; color: #a0a0a0; margin-top: -2px; margin-bottom: 8px; line-height: 1.4;">
             On mobile, long-press the image to save to camera roll
           </div>
@@ -1681,6 +1682,7 @@
       renderScaleBar();
       updateStatsBar();
       showOnboarding();
+      trackEvent('page_load', { hasHash: !!window.location.hash.slice(1) });
       updateProGates();
       await initializeAuth();
       handleCheckoutReturn();
@@ -2688,6 +2690,7 @@
           updateLegendDisplay();
           updateStatsBar();
           showMessage('Map loaded from URL', 'success');
+          trackEvent('load_from_url', { states: Object.keys(appState.stateColors).length });
         }
       }
     }
@@ -2697,6 +2700,7 @@
       const shareURL = `${window.location.origin}${window.location.pathname}#${encoded}`;
       navigator.clipboard.writeText(shareURL).then(() => {
         showMessage('Link copied to clipboard!', 'success');
+        trackEvent('copy_share_link', { title: appState.mapTitle });
       }).catch(() => {
         showMessage('Failed to copy link', 'error');
       });
@@ -2805,6 +2809,7 @@
         updateUpgradeModalUI();
         updateAuthHeaderUI();
         showMessage('Account created! Choose a plan below.', 'success');
+        trackEvent('sign_up', { email: data.user.email });
       }
     }
 
@@ -2821,6 +2826,7 @@
       await checkSubscriptionStatus(data.session.access_token);
       updateUpgradeModalUI();
       updateAuthHeaderUI();
+      trackEvent('sign_in', { pro: appState.proUnlocked });
       if (appState.proUnlocked) {
         closeUpgradeModal();
         showMessage('Welcome back! Pro features active.', 'success');
@@ -2921,6 +2927,29 @@
     }
 
     // ── Export tracking (server-side enforced) ──────────────────────
+
+    // ============================================================================
+    // ANALYTICS — lightweight event tracking
+    // ============================================================================
+    function trackEvent(event, meta = {}) {
+      try {
+        const entry = { event, ts: new Date().toISOString(), ...meta };
+        // Append to localStorage log (capped at 500 entries)
+        const log = JSON.parse(localStorage.getItem('mapparatus_events') || '[]');
+        log.push(entry);
+        if (log.length > 500) log.splice(0, log.length - 500);
+        localStorage.setItem('mapparatus_events', JSON.stringify(log));
+        // Fire-and-forget to Supabase if table exists
+        if (supabaseClient) {
+          supabaseClient.from('analytics').insert([{
+            event: entry.event,
+            metadata: meta,
+            user_id: appState.currentUser?.id || null,
+            created_at: entry.ts
+          }]).then(() => {}).catch(() => {});
+        }
+      } catch (e) { /* silent */ }
+    }
 
     // Anonymous first-export check (localStorage, for users who haven't signed up yet)
     function getAnonymousExportUsed() {
@@ -3134,6 +3163,7 @@
           link.download = `${slug}.png`;
           link.click();
           showMessage('PNG exported successfully', 'success');
+          trackEvent('export_png', { title: appState.mapTitle, states: Object.keys(appState.stateColors).length });
         }
       }).catch(err => {
         console.error('Export failed:', err);
@@ -3152,6 +3182,80 @@
           updateLegendDisplay();
         }
       });
+    }
+
+    async function copyImageToClipboard() {
+      const perm = await checkExportPermission();
+      if (perm.needsSignUp) { showUpgradeModal(); showMessage('Sign up for a free account to continue exporting', 'info'); return; }
+      if (!perm.allowed) { showUpgradeModal(); showMessage('Free export limit reached this month', 'error'); return; }
+
+      showMessage('Copying image...', 'info');
+      const cleanExport = perm.anonymous || isPro();
+      if (!isPro()) {
+        await recordExport();
+        if (perm.remaining !== undefined && perm.remaining !== Infinity) {
+          appState._cachedRemaining = Math.max(0, (perm.anonymous ? 0 : perm.remaining - 1));
+        }
+      }
+
+      const statsBar = document.getElementById('statsBar');
+      statsBar.style.display = 'none';
+      statsBar.style.visibility = 'hidden';
+      const watermarkEl = document.getElementById('freeWatermark');
+      if (watermarkEl) watermarkEl.style.display = 'none';
+      const subtitleEl = document.getElementById('mapSubtitle');
+      const subtitleWasEmpty = subtitleEl && subtitleEl.textContent.trim() === '';
+      if (subtitleWasEmpty) subtitleEl.style.display = 'none';
+      const mapContainer = document.getElementById('mapContainer');
+      const svg = document.getElementById('mapSVG');
+      const origOverflow = mapContainer.style.overflow;
+      const origSvgFlex = svg.style.flex;
+      const origSvgMinH = svg.style.minHeight;
+      mapContainer.style.overflow = 'visible';
+      svg.style.flex = 'none';
+      svg.style.minHeight = 'auto';
+      svg.style.height = 'auto';
+
+      const legendEl = document.getElementById('legendDisplay');
+      const origLegendStyle = legendEl ? legendEl.style.cssText : '';
+
+      const bgColor = appState.bgColor || (appState.darkMode ? '#1a1a2e' : '#f5f5f5');
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      try {
+        const canvas = await html2canvas(mapContainer, {
+          backgroundColor: bgColor, scrollX: 0, scrollY: -window.scrollY, scale: 3, useCORS: true
+        });
+        const ctx = canvas.getContext('2d');
+        if (!cleanExport) {
+          const sf = 3;
+          ctx.font = `${11 * sf}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+          ctx.fillStyle = appState.darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText('mapparatus.org', canvas.width - 48, canvas.height - 24);
+        }
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        showMessage('Image copied to clipboard! Paste anywhere.', 'success');
+        trackEvent('copy_image', { title: appState.mapTitle, states: Object.keys(appState.stateColors).length });
+      } catch (err) {
+        console.error('Copy to clipboard failed:', err);
+        showMessage('Copy failed — your browser may not support clipboard images', 'error');
+      } finally {
+        statsBar.style.display = '';
+        statsBar.style.visibility = '';
+        if (watermarkEl && !isPro()) watermarkEl.style.display = '';
+        if (subtitleWasEmpty && subtitleEl) subtitleEl.style.display = '';
+        mapContainer.style.overflow = origOverflow;
+        svg.style.flex = origSvgFlex;
+        svg.style.minHeight = origSvgMinH;
+        svg.style.height = '';
+        if (legendEl) {
+          legendEl.style.cssText = origLegendStyle;
+          updateLegendDisplay();
+        }
+      }
     }
 
     // --- Pro Gate Helpers ---
@@ -4062,6 +4166,7 @@
 
       // Export
       document.getElementById('exportPNGBtn').addEventListener('click', exportPNG);
+    document.getElementById('copyImageBtn').addEventListener('click', copyImageToClipboard);
       document.getElementById('exportSVGBtn').addEventListener('click', () => {
         if (!gateProFeature('SVG export')) return;
         exportSVG();
