@@ -3091,6 +3091,8 @@
       }
 
       const bgColor = appState.bgColor || (appState.darkMode ? '#1a1a2e' : '#f5f5f5');
+      // Wait one animation frame so the browser repaints before html2canvas captures
+      await new Promise(r => requestAnimationFrame(r));
       html2canvas(mapContainer, {
         backgroundColor: bgColor,
         scrollX: 0,
